@@ -1,0 +1,95 @@
+<!-- src/app/pages/avisos/avisos.page.html -->
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button></ion-back-button>
+    </ion-buttons>
+    <ion-title>📢 Avisos</ion-title>
+    <ion-buttons slot="end" *ngIf="ehSindico">
+      <ion-button (click)="abrirFormulario()">
+        <ion-icon name="add-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-refresher slot="fixed" (ionRefresh)="refresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <div *ngIf="carregando" class="loading-area">
+    <ion-spinner name="crescent" color="primary"></ion-spinner>
+  </div>
+
+  <div *ngIf="!carregando && avisos.length === 0" class="empty-state">
+    <div class="empty-icon">📢</div>
+    <p>Nenhum aviso publicado ainda</p>
+  </div>
+
+  <ion-card *ngFor="let a of avisos" class="aviso-card" [class.urgente]="a.urgente" [class.fixado]="a.fixado">
+    <ion-card-header>
+      <div class="aviso-badges">
+        <ion-badge color="danger" *ngIf="a.urgente">🚨 URGENTE</ion-badge>
+        <ion-badge color="medium" *ngIf="a.fixado">📌 Fixado</ion-badge>
+      </div>
+      <ion-card-title>{{ a.titulo }}</ion-card-title>
+      <ion-card-subtitle>
+        <ion-icon name="person-outline"></ion-icon> {{ a.autor_nome }} ·
+        <ion-icon name="time-outline"></ion-icon> {{ a.criado_em | date:'dd/MM/yyyy HH:mm' }}
+      </ion-card-subtitle>
+    </ion-card-header>
+    <ion-card-content>
+      {{ a.conteudo }}
+    </ion-card-content>
+    <div class="card-actions" *ngIf="ehSindico">
+      <ion-button fill="clear" color="danger" size="small" (click)="confirmarDelete(a)">
+        <ion-icon name="trash-outline" slot="start"></ion-icon> Remover
+      </ion-button>
+    </div>
+  </ion-card>
+
+  <!-- Modal novo aviso -->
+  <ion-modal [isOpen]="formularioAberto" (didDismiss)="fecharFormulario()">
+    <ng-template>
+      <ion-header>
+        <ion-toolbar>
+          <ion-title>Novo Aviso</ion-title>
+          <ion-buttons slot="end">
+            <ion-button (click)="fecharFormulario()">Cancelar</ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content class="ion-padding">
+
+        <ion-item>
+          <ion-label position="floating">Título *</ion-label>
+          <ion-input [(ngModel)]="novoAviso.titulo" placeholder="Ex: Manutenção na piscina"></ion-input>
+        </ion-item>
+
+        <ion-item>
+          <ion-label position="floating">Conteúdo *</ion-label>
+          <ion-textarea [(ngModel)]="novoAviso.conteudo" rows="5"
+            placeholder="Descreva o aviso completo aqui..."></ion-textarea>
+        </ion-item>
+
+        <ion-item>
+          <ion-label>Urgente?</ion-label>
+          <ion-toggle [(ngModel)]="novoAviso.urgente" slot="end" color="danger"></ion-toggle>
+        </ion-item>
+
+        <ion-item>
+          <ion-label>Fixar no topo?</ion-label>
+          <ion-toggle [(ngModel)]="novoAviso.fixado" slot="end" color="primary"></ion-toggle>
+        </ion-item>
+
+        <ion-button expand="block" color="primary" (click)="salvar()" style="margin-top:24px">
+          <ion-icon name="megaphone-outline" slot="start"></ion-icon>
+          Publicar para todos os moradores
+        </ion-button>
+
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+
+</ion-content>

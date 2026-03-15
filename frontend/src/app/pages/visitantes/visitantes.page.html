@@ -1,0 +1,118 @@
+<!-- src/app/pages/visitantes/visitantes.page.html -->
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start"><ion-back-button></ion-back-button></ion-buttons>
+    <ion-title>🚗 Visitantes</ion-title>
+    <ion-buttons slot="end" *ngIf="podeRegistrar">
+      <ion-button (click)="abrirFormulario()">
+        <ion-icon name="add-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+  <ion-toolbar>
+    <ion-searchbar [(ngModel)]="busca" (ionInput)="filtrar()"
+      placeholder="Buscar por nome ou placa..." debounce="300">
+    </ion-searchbar>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-refresher slot="fixed" (ionRefresh)="refresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <div *ngIf="carregando" class="loading-area">
+    <ion-spinner name="crescent" color="primary"></ion-spinner>
+  </div>
+
+  <div *ngIf="!carregando && visitantesFiltrados.length === 0" class="empty-state">
+    <div class="empty-icon">🚗</div>
+    <p>Nenhum visitante registrado</p>
+  </div>
+
+  <ion-card *ngFor="let v of visitantesFiltrados" class="visitante-card">
+    <ion-card-header>
+      <div class="visitante-header">
+        <div>
+          <ion-card-title>{{ v.nome }}</ion-card-title>
+          <ion-card-subtitle>
+            Visita: {{ v.morador_nome }} — Apto {{ v.apartamento }}
+          </ion-card-subtitle>
+        </div>
+        <ion-badge [color]="getCorStatus(v.status)">{{ v.status }}</ion-badge>
+      </div>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-grid>
+        <ion-row>
+          <ion-col size="6" *ngIf="v.documento">
+            <small class="label">Documento</small>
+            <p>{{ v.documento }}</p>
+          </ion-col>
+          <ion-col size="6" *ngIf="v.placa">
+            <small class="label">Placa</small>
+            <p>🚗 {{ v.placa }}</p>
+          </ion-col>
+          <ion-col size="12" *ngIf="v.motivo">
+            <small class="label">Motivo</small>
+            <p>{{ v.motivo }}</p>
+          </ion-col>
+          <ion-col size="6">
+            <small class="label">Entrada</small>
+            <p>{{ (v.entrada_em || v.criado_em) | date:'dd/MM HH:mm' }}</p>
+          </ion-col>
+          <ion-col size="6" *ngIf="v.saida_em">
+            <small class="label">Saída</small>
+            <p>{{ v.saida_em | date:'dd/MM HH:mm' }}</p>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+    </ion-card-content>
+    <div class="card-actions" *ngIf="v.status === 'autorizado' && podeRegistrar">
+      <ion-button fill="clear" size="small" color="medium" (click)="registrarSaida(v.id)">
+        <ion-icon name="exit-outline" slot="start"></ion-icon> Registrar Saída
+      </ion-button>
+    </div>
+  </ion-card>
+
+  <!-- Modal registrar visitante -->
+  <ion-modal [isOpen]="formularioAberto" (didDismiss)="fecharFormulario()">
+    <ng-template>
+      <ion-header>
+        <ion-toolbar>
+          <ion-title>Registrar Visitante</ion-title>
+          <ion-buttons slot="end">
+            <ion-button (click)="fecharFormulario()">Cancelar</ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content class="ion-padding">
+        <ion-item>
+          <ion-label position="floating">Nome do Visitante *</ion-label>
+          <ion-input [(ngModel)]="novoVisitante.nome"></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-label position="floating">Apartamento que visita *</ion-label>
+          <ion-input [(ngModel)]="novoVisitante.apartamento" placeholder="Ex: 302"></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-label position="floating">Documento (RG/CPF)</ion-label>
+          <ion-input [(ngModel)]="novoVisitante.documento"></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-label position="floating">Placa do veículo</ion-label>
+          <ion-input [(ngModel)]="novoVisitante.placa" placeholder="Ex: ABC-1234"></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-label position="floating">Motivo da visita</ion-label>
+          <ion-input [(ngModel)]="novoVisitante.motivo" placeholder="Ex: Visita familiar"></ion-input>
+        </ion-item>
+        <ion-button expand="block" color="primary" (click)="salvar()" style="margin-top:24px">
+          <ion-icon name="person-add-outline" slot="start"></ion-icon>
+          Registrar Entrada
+        </ion-button>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+
+</ion-content>

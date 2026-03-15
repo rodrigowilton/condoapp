@@ -1,0 +1,101 @@
+<!-- src/app/pages/home-morador/home-morador.page.html -->
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>
+      <span>🏘️ CondoApp</span>
+    </ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="verNotificacoes()">
+        <ion-icon name="notifications-outline"></ion-icon>
+        <ion-badge *ngIf="naoLidas > 0" color="danger">{{ naoLidas }}</ion-badge>
+      </ion-button>
+      <ion-button (click)="logout()">
+        <ion-icon name="log-out-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-refresher slot="fixed" (ionRefresh)="refresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <!-- Saudação -->
+  <div class="hero-section">
+    <div class="hero-text">
+      <p class="saudacao">Olá, {{ usuario?.nome?.split(' ')[0] }} 👋</p>
+      <p class="apto">Apto {{ usuario?.apartamento }}{{ usuario?.bloco ? ' — Bloco ' + usuario?.bloco : '' }}</p>
+    </div>
+    <div class="hero-condo">{{ usuario?.condominio_nome }}</div>
+  </div>
+
+  <!-- Menu de funcionalidades -->
+  <div class="menu-grid">
+
+    <ion-card class="menu-card" (click)="ir('avisos')" button>
+      <div class="menu-icon" style="background: rgba(255,122,69,0.15)">📢</div>
+      <p>Avisos</p>
+    </ion-card>
+
+    <ion-card class="menu-card" (click)="ir('reservas')" button>
+      <div class="menu-icon" style="background: rgba(100,130,255,0.15)">🎉</div>
+      <p>Reservas</p>
+    </ion-card>
+
+    <ion-card class="menu-card" (click)="ir('encomendas')" button>
+      <div class="menu-icon" style="background: rgba(0,200,150,0.15)">📦</div>
+      <p>Encomendas</p>
+      <ion-badge *ngIf="encomendasPendentes > 0" color="success">{{ encomendasPendentes }}</ion-badge>
+    </ion-card>
+
+    <ion-card class="menu-card" (click)="ir('visitantes')" button>
+      <div class="menu-icon" style="background: rgba(255,209,102,0.15)">🚗</div>
+      <p>Visitantes</p>
+    </ion-card>
+
+    <ion-card class="menu-card" (click)="ir('votacao')" button>
+      <div class="menu-icon" style="background: rgba(200,100,255,0.15)">🗳️</div>
+      <p>Votação</p>
+    </ion-card>
+
+    <ion-card class="menu-card" (click)="ir('achados')" button>
+      <div class="menu-icon" style="background: rgba(255,100,130,0.15)">🔍</div>
+      <p>Achados</p>
+    </ion-card>
+
+    <ion-card class="menu-card" (click)="ir('mural')" button>
+      <div class="menu-icon" style="background: rgba(0,180,255,0.15)">💬</div>
+      <p>Mural</p>
+    </ion-card>
+
+    <ion-card class="menu-card" (click)="ir('manutencao')" button>
+      <div class="menu-icon" style="background: rgba(50,220,150,0.15)">🔧</div>
+      <p>Manutenção</p>
+    </ion-card>
+
+  </div>
+
+  <!-- Últimos avisos -->
+  <div class="section-title">📢 Últimos Avisos</div>
+
+  <div *ngIf="carregando" class="loading-area">
+    <ion-spinner name="crescent" color="primary"></ion-spinner>
+  </div>
+
+  <ion-card *ngFor="let aviso of avisos.slice(0,3)" class="aviso-card" [class.urgente]="aviso.urgente">
+    <ion-card-header>
+      <ion-card-title>
+        <ion-badge *ngIf="aviso.urgente" color="danger">URGENTE</ion-badge>
+        {{ aviso.titulo }}
+      </ion-card-title>
+      <ion-card-subtitle>{{ aviso.autor_nome }} · {{ aviso.criado_em | date:'dd/MM HH:mm' }}</ion-card-subtitle>
+    </ion-card-header>
+    <ion-card-content>{{ aviso.conteudo }}</ion-card-content>
+  </ion-card>
+
+  <ion-button fill="clear" expand="block" (click)="ir('avisos')" *ngIf="avisos.length > 3">
+    Ver todos os avisos →
+  </ion-button>
+
+</ion-content>

@@ -1,0 +1,117 @@
+<!-- src/app/pages/votacao/votacao.page.html -->
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start"><ion-back-button></ion-back-button></ion-buttons>
+    <ion-title>🗳️ Assembleias</ion-title>
+    <ion-buttons slot="end" *ngIf="ehSindico">
+      <ion-button (click)="abrirFormulario()">
+        <ion-icon name="add-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-refresher slot="fixed" (ionRefresh)="refresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <div *ngIf="carregando" class="loading-area">
+    <ion-spinner name="crescent" color="primary"></ion-spinner>
+  </div>
+
+  <div *ngIf="!carregando && assembleias.length === 0" class="empty-state">
+    <div class="empty-icon">🗳️</div>
+    <p>Nenhuma assembleia aberta</p>
+  </div>
+
+  <ion-card *ngFor="let a of assembleias" class="votacao-card">
+    <ion-card-header>
+      <div class="votacao-header">
+        <ion-card-title>{{ a.titulo }}</ion-card-title>
+        <ion-badge [color]="a.status === 'aberta' ? 'success' : 'medium'">
+          {{ a.status === 'aberta' ? 'Aberta' : 'Encerrada' }}
+        </ion-badge>
+      </div>
+      <ion-card-subtitle>
+        Por {{ a.criado_por_nome }} · Até {{ a.data_limite | date:'dd/MM/yyyy HH:mm' }}
+      </ion-card-subtitle>
+    </ion-card-header>
+
+    <ion-card-content>
+      <p *ngIf="a.descricao" class="descricao">{{ a.descricao }}</p>
+
+      <!-- Barra de progresso dos votos -->
+      <div class="votos-info">
+        <span class="voto-sim">✅ Sim: {{ a.votos_sim }}</span>
+        <span class="voto-nao">❌ Não: {{ a.votos_nao }}</span>
+        <span class="voto-total">Total: {{ a.total_votos }}</span>
+      </div>
+
+      <ion-progress-bar
+        *ngIf="a.total_votos > 0"
+        [value]="a.votos_sim / a.total_votos"
+        color="success">
+      </ion-progress-bar>
+    </ion-card-content>
+
+    <!-- Botões de votação (somente se aberta) -->
+    <div class="card-actions" *ngIf="a.status === 'aberta'">
+      <ion-button fill="outline" color="success" size="small" (click)="votar(a.id, 'sim')">
+        <ion-icon name="thumbs-up-outline" slot="start"></ion-icon> Sim
+      </ion-button>
+      <ion-button fill="outline" color="danger" size="small" (click)="votar(a.id, 'nao')">
+        <ion-icon name="thumbs-down-outline" slot="start"></ion-icon> Não
+      </ion-button>
+      <ion-button fill="outline" color="medium" size="small" (click)="votar(a.id, 'abstencao')">
+        Abstir
+      </ion-button>
+      <ion-button *ngIf="ehSindico" fill="clear" color="warning" size="small"
+        (click)="encerrar(a.id)">
+        <ion-icon name="lock-closed-outline" slot="start"></ion-icon> Encerrar
+      </ion-button>
+    </div>
+  </ion-card>
+
+  <!-- Modal nova assembleia -->
+  <ion-modal [isOpen]="formularioAberto" (didDismiss)="fecharFormulario()">
+    <ng-template>
+      <ion-header>
+        <ion-toolbar>
+          <ion-title>Nova Assembleia</ion-title>
+          <ion-buttons slot="end">
+            <ion-button (click)="fecharFormulario()">Cancelar</ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content class="ion-padding">
+        <ion-item>
+          <ion-label position="floating">Título da Pauta *</ion-label>
+          <ion-input [(ngModel)]="novaAssembleia.titulo"
+            placeholder="Ex: Instalação de câmeras no hall"></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-label position="floating">Descrição</ion-label>
+          <ion-textarea [(ngModel)]="novaAssembleia.descricao" rows="4"
+            placeholder="Explique os detalhes da votação..."></ion-textarea>
+        </ion-item>
+        <ion-item>
+          <ion-label position="floating">Data limite para votar *</ion-label>
+          <ion-datetime-button datetime="dtlimite"></ion-datetime-button>
+          <ion-modal [keepContentsMounted]="true">
+            <ng-template>
+              <ion-datetime id="dtlimite" presentation="date-time"
+                [(ngModel)]="novaAssembleia.data_limite" locale="pt-BR">
+              </ion-datetime>
+            </ng-template>
+          </ion-modal>
+        </ion-item>
+        <ion-button expand="block" color="primary" (click)="salvar()" style="margin-top:24px">
+          <ion-icon name="checkmark-circle-outline" slot="start"></ion-icon>
+          Abrir Votação
+        </ion-button>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+
+</ion-content>

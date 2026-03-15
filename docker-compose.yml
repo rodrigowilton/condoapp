@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+
+  # ── Banco de dados PostgreSQL ──────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: condoapp_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: condoapp
+      POSTGRES_USER: condoapp_user
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-condoapp_senha}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/01_schema.sql:/docker-entrypoint-initdb.d/01_schema.sql
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U condoapp_user -d condoapp"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Backend API ────────────────────────
+  backend:
+    build: ./backend
+    container_name: condoapp_api
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: condoapp
+      DB_USER: condoapp_user
+      DB_PASSWORD: ${DB_PASSWORD:-condoapp_senha}
+      JWT_SECRET: ${JWT_SECRET:-mude_esta_chave}
+      JWT_EXPIRES_IN: 7d
+      FRONTEND_URL: ${FRONTEND_URL:-*}
+    ports:
+      - "3000:3000"
+    volumes:
+      - uploads_data:/app/uploads
+
+volumes:
+  postgres_data:
+  uploads_data:

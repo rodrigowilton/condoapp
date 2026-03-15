@@ -1,0 +1,83 @@
+<!-- src/app/pages/home-sindico/home-sindico.page.html -->
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>🛡️ Painel do Síndico</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="logout()">
+        <ion-icon name="log-out-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-refresher slot="fixed" (ionRefresh)="refresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <!-- Stats rápidos -->
+  <div class="stats-row">
+    <div class="stat-box">
+      <span class="stat-num">{{ totalMoradores }}</span>
+      <span class="stat-label">Moradores</span>
+    </div>
+    <div class="stat-box">
+      <span class="stat-num">{{ reservasPendentes }}</span>
+      <span class="stat-label">Reservas pendentes</span>
+    </div>
+    <div class="stat-box">
+      <span class="stat-num">{{ chamadosAbertos }}</span>
+      <span class="stat-label">Chamados abertos</span>
+    </div>
+  </div>
+
+  <!-- Menu -->
+  <div class="menu-grid">
+    <ion-card class="menu-card" (click)="ir('avisos')" button>
+      <div class="menu-icon" style="background:rgba(255,122,69,0.15)">📢</div><p>Avisos</p>
+    </ion-card>
+    <ion-card class="menu-card" (click)="ir('reservas')" button>
+      <div class="menu-icon" style="background:rgba(100,130,255,0.15)">🎉</div><p>Reservas</p>
+    </ion-card>
+    <ion-card class="menu-card" (click)="ir('encomendas')" button>
+      <div class="menu-icon" style="background:rgba(0,200,150,0.15)">📦</div><p>Encomendas</p>
+    </ion-card>
+    <ion-card class="menu-card" (click)="ir('visitantes')" button>
+      <div class="menu-icon" style="background:rgba(255,209,102,0.15)">🚗</div><p>Visitantes</p>
+    </ion-card>
+    <ion-card class="menu-card" (click)="ir('votacao')" button>
+      <div class="menu-icon" style="background:rgba(200,100,255,0.15)">🗳️</div><p>Votação</p>
+    </ion-card>
+    <ion-card class="menu-card" (click)="ir('manutencao')" button>
+      <div class="menu-icon" style="background:rgba(50,220,150,0.15)">🔧</div><p>Chamados</p>
+    </ion-card>
+    <ion-card class="menu-card" (click)="ir('moradores')" button>
+      <div class="menu-icon" style="background:rgba(0,180,255,0.15)">👥</div><p>Moradores</p>
+    </ion-card>
+    <ion-card class="menu-card" (click)="ir('mural')" button>
+      <div class="menu-icon" style="background:rgba(255,100,130,0.15)">💬</div><p>Mural</p>
+    </ion-card>
+  </div>
+
+  <!-- Reservas pendentes de aprovação -->
+  <div class="section-title" *ngIf="reservas.length > 0">🎉 Reservas para Aprovar</div>
+
+  <ion-card *ngFor="let r of reservas" class="reserva-card">
+    <ion-card-header>
+      <ion-card-title>{{ r.espaco_nome }}</ion-card-title>
+      <ion-card-subtitle>{{ r.usuario_nome }} — Apto {{ r.apartamento }}</ion-card-subtitle>
+    </ion-card-header>
+    <ion-card-content>
+      {{ r.data_inicio | date:'dd/MM/yyyy HH:mm' }} → {{ r.data_fim | date:'HH:mm' }}
+    </ion-card-content>
+    <ion-footer>
+      <ion-button fill="clear" color="danger" (click)="aprovarReserva(r.id, 'recusada')">
+        <ion-icon name="close-circle" slot="start"></ion-icon> Recusar
+      </ion-button>
+      <ion-button fill="clear" color="success" (click)="aprovarReserva(r.id, 'aprovada')">
+        <ion-icon name="checkmark-circle" slot="start"></ion-icon> Aprovar
+      </ion-button>
+    </ion-footer>
+  </ion-card>
+
+</ion-content>
