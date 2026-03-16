@@ -1,139 +1,101 @@
-<!-- src/app/pages/gerencial/dashboard/dashboard.page.html -->
-<ion-header>
-  <ion-toolbar color="primary">
-    <ion-title>⚙️ Painel Gerencial</ion-title>
-    <ion-buttons slot="end">
-      <ion-button (click)="logout()">
-        <ion-icon name="log-out-outline"></ion-icon>
-      </ion-button>
-    </ion-buttons>
-  </ion-toolbar>
-</ion-header>
-
 <ion-content>
-  <ion-refresher slot="fixed" (ionRefresh)="refresh($event)">
-    <ion-refresher-content></ion-refresher-content>
-  </ion-refresher>
-
-  <!-- Stats -->
-  <div class="stats-dashboard">
-    <div class="stat-card">
-      <span class="stat-icon">🏘️</span>
-      <span class="stat-num">{{ stats?.total_condominios || 0 }}</span>
-      <span class="stat-label">Condomínios</span>
-    </div>
-    <div class="stat-card">
-      <span class="stat-icon">👥</span>
-      <span class="stat-num">{{ stats?.total_usuarios || 0 }}</span>
-      <span class="stat-label">Usuários</span>
-    </div>
-    <div class="stat-card">
-      <span class="stat-icon">⏳</span>
-      <span class="stat-num">{{ stats?.trials_ativos || 0 }}</span>
-      <span class="stat-label">Trials Ativos</span>
-    </div>
-  </div>
-
-  <!-- Ações rápidas -->
-  <div class="section-title">Gerenciar</div>
-  <div class="acoes-grid">
-    <ion-button expand="block" fill="outline" (click)="ir('condominios')">
-      <ion-icon name="business-outline" slot="start"></ion-icon>
-      Condomínios
-    </ion-button>
-    <ion-button expand="block" fill="outline" (click)="ir('usuarios')">
-      <ion-icon name="people-outline" slot="start"></ion-icon>
-      Usuários
-    </ion-button>
-  </div>
-
-  <!-- Lista de condomínios -->
-  <div class="section-title">Condomínios Recentes</div>
-
-  <ion-card *ngFor="let c of condominios" class="condo-card">
-    <ion-card-header>
-      <div class="condo-header">
+  <div class="dash-bg">
+    <!-- Header -->
+    <div class="dash-header">
+      <div class="dash-header-left">
+        <div class="dash-logo">⚙️</div>
         <div>
-          <ion-card-title>{{ c.nome }}</ion-card-title>
-          <ion-card-subtitle>{{ c.cidade }}/{{ c.estado }}</ion-card-subtitle>
+          <h1>Painel Gerencial</h1>
+          <p>CondoApp · Administração</p>
         </div>
-        <ion-badge [color]="c.bloqueado ? 'danger' : (c.trial_expirado ? 'warning' : 'success')">
-          {{ c.bloqueado ? 'Bloqueado' : (c.trial_expirado ? 'Trial Expirado' : c.dias_restantes + 'd') }}
-        </ion-badge>
       </div>
-    </ion-card-header>
-    <ion-card-content>
-      <p>👥 {{ c.total_moradores }} moradores · 🛡️ {{ c.total_sindicos }} síndico(s)</p>
-      <p class="data-text">Trial até: {{ c.trial_fim | date:'dd/MM/yyyy' }}</p>
-    </ion-card-content>
-    <div class="condo-actions">
-      <ion-button fill="clear" size="small" [color]="c.bloqueado ? 'success' : 'danger'"
-        (click)="toggleBloqueio(c)">
-        <ion-icon [name]="c.bloqueado ? 'lock-open-outline' : 'lock-closed-outline'" slot="start"></ion-icon>
-        {{ c.bloqueado ? 'Desbloquear' : 'Bloquear' }}
-      </ion-button>
-      <ion-button fill="clear" size="small" color="primary" (click)="estenderTrial(c)">
-        <ion-icon name="time-outline" slot="start"></ion-icon>
-        +30 dias
-      </ion-button>
+      <button class="btn-logout" (click)="logout()">Sair →</button>
     </div>
-  </ion-card>
 
-  <!-- FAB para criar condomínio -->
-  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
-    <ion-fab-button color="primary" (click)="abrirCriarCondo()">
-      <ion-icon name="add"></ion-icon>
-    </ion-fab-button>
-  </ion-fab>
+    <!-- Stats -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon-wrap" style="background:rgba(0,200,150,0.15)">🏘️</div>
+        <div class="stat-info">
+          <span class="stat-num">{{ stats?.total_condominios || 0 }}</span>
+          <span class="stat-label">Condomínios</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon-wrap" style="background:rgba(100,130,255,0.15)">👥</div>
+        <div class="stat-info">
+          <span class="stat-num">{{ stats?.total_usuarios || 0 }}</span>
+          <span class="stat-label">Usuários</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon-wrap" style="background:rgba(255,209,102,0.15)">⏳</div>
+        <div class="stat-info">
+          <span class="stat-num">{{ stats?.trials_ativos || 0 }}</span>
+          <span class="stat-label">Trials Ativos</span>
+        </div>
+      </div>
+    </div>
 
-  <!-- Modal criar condomínio -->
-  <ion-modal [isOpen]="modalAberto" (didDismiss)="fecharModal()">
-    <ng-template>
-      <ion-header>
-        <ion-toolbar>
-          <ion-title>Novo Condomínio</ion-title>
-          <ion-buttons slot="end"><ion-button (click)="fecharModal()">Fechar</ion-button></ion-buttons>
-        </ion-toolbar>
-      </ion-header>
-      <ion-content class="ion-padding">
-        <ion-list-header><ion-label>Dados do Condomínio</ion-label></ion-list-header>
-        <ion-item>
-          <ion-label position="floating">Nome *</ion-label>
-          <ion-input [(ngModel)]="novoCondo.nome"></ion-input>
-        </ion-item>
-        <ion-item>
-          <ion-label position="floating">Endereço</ion-label>
-          <ion-input [(ngModel)]="novoCondo.endereco"></ion-input>
-        </ion-item>
-        <ion-item>
-          <ion-label position="floating">Cidade</ion-label>
-          <ion-input [(ngModel)]="novoCondo.cidade"></ion-input>
-        </ion-item>
-        <ion-item>
-          <ion-label position="floating">Estado (UF)</ion-label>
-          <ion-input [(ngModel)]="novoCondo.estado" maxlength="2"></ion-input>
-        </ion-item>
+    <!-- Ações rápidas -->
+    <div class="section-label">Gerenciar</div>
+    <div class="acoes-row">
+      <button class="acao-btn" (click)="ir('condominios')">
+        <span>🏢</span> Condomínios
+      </button>
+      <button class="acao-btn" (click)="ir('usuarios')">
+        <span>👤</span> Usuários
+      </button>
+    </div>
 
-        <ion-list-header><ion-label>Dados do Síndico</ion-label></ion-list-header>
-        <ion-item>
-          <ion-label position="floating">Nome do Síndico *</ion-label>
-          <ion-input [(ngModel)]="novoCondo.sindico_nome"></ion-input>
-        </ion-item>
-        <ion-item>
-          <ion-label position="floating">E-mail do Síndico *</ion-label>
-          <ion-input type="email" [(ngModel)]="novoCondo.sindico_email"></ion-input>
-        </ion-item>
-        <ion-item>
-          <ion-label position="floating">Senha do Síndico *</ion-label>
-          <ion-input type="password" [(ngModel)]="novoCondo.sindico_senha"></ion-input>
-        </ion-item>
+    <!-- Lista condominios resumida -->
+    <div class="section-label">Condomínios</div>
+    <div class="condo-list">
+      <div class="condo-card" *ngFor="let c of condominios">
+        <div class="condo-top">
+          <div class="condo-info">
+            <h3>{{ c.nome }}</h3>
+            <p>{{ c.cidade }}/{{ c.estado }}</p>
+            <p *ngIf="c.telefone" style="color:#8890B5;font-size:12px;margin:2px 0 0">📱 {{ c.telefone }}</p>
+          </div>
+          <span class="condo-badge" [class.bloqueado]="c.bloqueado" [class.expirado]="c.trial_expirado">
+            {{ c.bloqueado ? '🔒 Bloqueado' : (c.trial_expirado ? '⚠️ Expirado' : (c.dias_restantes === 9999 ? '♾️ Sem venc.' : '✅ ' + c.dias_restantes + 'd')) }}
+          </span>
+        </div>
+        <div class="condo-meta">
+          <span>👥 {{ c.total_moradores }} moradores</span>
+          <span>🛡️ {{ c.total_sindicos }} síndico(s)</span>
+          <span>📅 {{ c.dias_restantes === 9999 ? 'Sem vencimento' : 'Trial: ' + (c.trial_fim | date:'dd/MM/yyyy') }}</span>
+        </div>
+      </div>
+    </div>
 
-        <ion-button expand="block" color="primary" (click)="salvarCondo()" style="margin-top:20px">
-          <ion-icon name="save-outline" slot="start"></ion-icon>
-          Criar Condomínio + Síndico
-        </ion-button>
-      </ion-content>
-    </ng-template>
-  </ion-modal>
+    <!-- FAB -->
+    <button class="fab-btn" (click)="abrirCriarCondo()">+</button>
 
+    <!-- Modal -->
+    <div class="modal-overlay" *ngIf="modalAberto" (click)="fecharModal()">
+      <div class="modal-box" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3>Novo Condomínio</h3>
+          <button (click)="fecharModal()">✕</button>
+        </div>
+        <div class="modal-body">
+          <p class="modal-section">Dados do Condomínio</p>
+          <div class="modal-field"><label>Nome *</label><input [(ngModel)]="novoCondo.nome" placeholder="Ex: Residencial das Flores"/></div>
+          <div class="modal-field"><label>Endereço</label><input [(ngModel)]="novoCondo.endereco" placeholder="Rua, número"/></div>
+          <div class="modal-row">
+            <div class="modal-field"><label>Cidade</label><input [(ngModel)]="novoCondo.cidade"/></div>
+            <div class="modal-field" style="max-width:80px"><label>UF</label><input [(ngModel)]="novoCondo.estado" maxlength="2"/></div>
+          </div>
+          <p class="modal-section">Dados do Síndico</p>
+          <div class="modal-field"><label>Nome *</label><input [(ngModel)]="novoCondo.sindico_nome"/></div>
+          <div class="modal-field"><label>E-mail *</label><input type="email" [(ngModel)]="novoCondo.sindico_email"/></div>
+          <div class="modal-field"><label>Senha *</label><input type="password" [(ngModel)]="novoCondo.sindico_senha"/></div>
+          <button class="btn-salvar" (click)="salvarCondo()">✅ Criar Condomínio + Síndico</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
 </ion-content>

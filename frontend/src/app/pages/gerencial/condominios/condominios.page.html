@@ -1,0 +1,239 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start"><ion-back-button defaultHref="/gerencial/dashboard" text="Voltar"></ion-back-button></ion-buttons>
+    <ion-title>🏢 Condomínios</ion-title>
+  </ion-toolbar>
+</ion-header>
+<ion-content>
+  <ion-refresher slot="fixed" (ionRefresh)="refresh($event)"><ion-refresher-content></ion-refresher-content></ion-refresher>
+  <div *ngIf="carregando" style="text-align:center;padding:60px"><ion-spinner color="primary"></ion-spinner></div>
+  <div style="padding:16px;display:flex;flex-direction:column;gap:12px">
+    <div *ngFor="let c of condominios" style="background:#1E2444;border-radius:16px;padding:16px;border:1px solid rgba(255,255,255,0.05)">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
+        <div>
+          <h3 style="color:#F5F7FF;font-size:16px;font-weight:700;margin:0 0 4px">{{ c.nome }}</h3>
+          <p style="color:#8890B5;font-size:13px;margin:0">{{ c.cidade }}/{{ c.estado }}</p>
+        </div>
+        <span [style.background]="c.bloqueado?'rgba(255,100,130,0.15)':'rgba(0,200,150,0.15)'"
+              [style.color]="c.bloqueado?'#FF6482':'#00C896'"
+              style="font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px">
+          {{ c.bloqueado ? '🔒 Bloqueado' : '✅ Ativo' }}
+        </span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px">
+        <div style="background:#0F1225;border-radius:10px;padding:10px;text-align:center">
+          <p style="color:#8890B5;font-size:11px;margin:0 0 2px;text-transform:uppercase">Moradores</p>
+          <p style="color:#F5F7FF;font-size:18px;font-weight:800;margin:0">{{ c.total_moradores }}</p>
+        </div>
+        <div style="background:#0F1225;border-radius:10px;padding:10px;text-align:center">
+          <p style="color:#8890B5;font-size:11px;margin:0 0 2px;text-transform:uppercase">Síndicos</p>
+          <p style="color:#F5F7FF;font-size:18px;font-weight:800;margin:0">{{ c.total_sindicos }}</p>
+        </div>
+        <div style="background:#0F1225;border-radius:10px;padding:10px;text-align:center">
+          <p style="color:#8890B5;font-size:11px;margin:0 0 2px;text-transform:uppercase">Trial</p>
+          <p style="color:#FFD166;font-size:14px;font-weight:800;margin:0">{{ c.dias_restantes }}d</p>
+        </div>
+      </div>
+      <p style="color:#8890B5;font-size:12px;margin:0 0 12px">📅 Trial até: {{ c.trial_fim | date:'dd/MM/yyyy' }}</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button (click)="bloquear(c)" [style.background]="c.bloqueado?'rgba(0,200,150,0.15)':'rgba(255,100,130,0.15)'" [style.color]="c.bloqueado?'#00C896':'#FF6482'"
+          style="flex:1;padding:10px;border:none;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer">
+          {{ c.bloqueado ? '🔓 Desbloquear' : '🔒 Bloquear' }}
+        </button>
+        <button (click)="estender(c)"
+          style="flex:1;padding:10px;background:rgba(255,209,102,0.15);border:none;border-radius:10px;color:#FFD166;font-size:13px;font-weight:600;cursor:pointer">
+          ⏱️ +30 dias
+        </button>
+        <button (click)="semVencimento(c)"
+          style="flex:1;padding:10px;background:rgba(100,130,255,0.15);border:none;border-radius:10px;color:#6482FF;font-size:13px;font-weight:600;cursor:pointer">
+          ♾️ Sem venc.
+        </button>
+
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+        <button (click)="abrirEdicao(c)"
+          style="flex:1;padding:10px;background:rgba(0,200,150,0.15);border:none;border-radius:10px;color:#00C896;font-size:13px;font-weight:600;cursor:pointer">
+          ✏️ Editar
+        </button>
+        <button (click)="abrirVincularSindico(c)"
+          style="flex:1;padding:10px;background:rgba(200,100,255,0.15);border:none;border-radius:10px;color:#C864FF;font-size:13px;font-weight:600;cursor:pointer">
+          🛡️ Vincular Síndico
+        </button>
+      </div>
+    </div>
+  </div>
+  <!-- Nav bar -->
+  <div style="position:fixed;bottom:0;left:0;right:0;background:#1A1F3C;border-top:1px solid rgba(255,255,255,0.08);display:flex;z-index:200">
+    <button onclick="history.back()" style="flex:1;padding:14px;background:transparent;border:none;color:#8890B5;font-size:12px;font-weight:600;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px">
+      <span style="font-size:20px">←</span>Voltar
+    </button>
+    <button onclick="window.location.href='/#/gerencial/dashboard'" style="flex:1;padding:14px;background:transparent;border:none;color:#00C896;font-size:12px;font-weight:600;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px">
+      <span style="font-size:20px">🏠</span>Início
+    </button>
+  </div>
+  <div style="height:70px"></div>
+  <!-- FAB -->
+  <div style="position:fixed;bottom:80px;right:24px;z-index:100">
+    <button (click)="formularioAberto=true" style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#00C896,#00a07a);border:none;color:#0F1225;font-size:28px;cursor:pointer;box-shadow:0 8px 24px rgba(0,200,150,0.4)">+</button>
+  </div>
+  <!-- Modal novo condomínio -->
+  <div *ngIf="formularioAberto" style="position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:1000;display:flex;align-items:flex-end;justify-content:center" (click)="formularioAberto=false">
+    <div style="background:#1E2444;border-radius:24px 24px 0 0;width:100%;max-width:600px;max-height:90vh;overflow-y:auto" (click)="$event.stopPropagation()">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:20px 24px 0">
+        <h3 style="color:#F5F7FF;font-size:18px;font-weight:700;margin:0">Novo Condomínio</h3>
+        <button (click)="formularioAberto=false" style="background:rgba(255,255,255,0.1);border:none;border-radius:50%;width:32px;height:32px;color:#F5F7FF;cursor:pointer">✕</button>
+      </div>
+      <div style="padding:20px 24px 32px">
+        <p style="color:#00C896;font-size:12px;font-weight:700;text-transform:uppercase;margin:0 0 12px">Dados do Condomínio</p>
+        <div style="margin-bottom:12px"><label style="display:block;color:#8890B5;font-size:12px;font-weight:600;text-transform:uppercase;margin-bottom:6px">Nome *</label>
+          <input [(ngModel)]="novo.nome" style="width:100%;padding:12px 14px;background:#0F1225;border:1.5px solid #2A3158;border-radius:10px;color:#F5F7FF;font-size:15px;box-sizing:border-box;outline:none"/></div>
+        <div style="margin-bottom:12px"><label style="display:block;color:#8890B5;font-size:12px;font-weight:600;text-transform:uppercase;margin-bottom:6px">Endereço</label>
+          <input [(ngModel)]="novo.endereco" style="width:100%;padding:12px 14px;background:#0F1225;border:1.5px solid #2A3158;border-radius:10px;color:#F5F7FF;font-size:15px;box-sizing:border-box;outline:none"/></div>
+        <div style="display:flex;gap:12px;margin-bottom:12px">
+          <div style="flex:1"><label style="display:block;color:#8890B5;font-size:12px;font-weight:600;text-transform:uppercase;margin-bottom:6px">Cidade</label>
+            <input [(ngModel)]="novo.cidade" style="width:100%;padding:12px 14px;background:#0F1225;border:1.5px solid #2A3158;border-radius:10px;color:#F5F7FF;font-size:15px;box-sizing:border-box;outline:none"/></div>
+          <div style="max-width:80px"><label style="display:block;color:#8890B5;font-size:12px;font-weight:600;text-transform:uppercase;margin-bottom:6px">UF</label>
+            <input [(ngModel)]="novo.estado" maxlength="2" style="width:100%;padding:12px 14px;background:#0F1225;border:1.5px solid #2A3158;border-radius:10px;color:#F5F7FF;font-size:15px;box-sizing:border-box;outline:none"/></div>
+        </div>
+        <p style="color:#00C896;font-size:12px;font-weight:700;text-transform:uppercase;margin:16px 0 12px">Dados do Síndico</p>
+        <div style="margin-bottom:12px"><label style="display:block;color:#8890B5;font-size:12px;font-weight:600;text-transform:uppercase;margin-bottom:6px">Nome *</label>
+          <input [(ngModel)]="novo.sindico_nome" style="width:100%;padding:12px 14px;background:#0F1225;border:1.5px solid #2A3158;border-radius:10px;color:#F5F7FF;font-size:15px;box-sizing:border-box;outline:none"/></div>
+        <div style="margin-bottom:12px"><label style="display:block;color:#8890B5;font-size:12px;font-weight:600;text-transform:uppercase;margin-bottom:6px">E-mail *</label>
+          <input type="email" [(ngModel)]="novo.sindico_email" style="width:100%;padding:12px 14px;background:#0F1225;border:1.5px solid #2A3158;border-radius:10px;color:#F5F7FF;font-size:15px;box-sizing:border-box;outline:none"/></div>
+        <div style="margin-bottom:20px"><label style="display:block;color:#8890B5;font-size:12px;font-weight:600;text-transform:uppercase;margin-bottom:6px">Senha *</label>
+          <input type="password" [(ngModel)]="novo.sindico_senha" style="width:100%;padding:12px 14px;background:#0F1225;border:1.5px solid #2A3158;border-radius:10px;color:#F5F7FF;font-size:15px;box-sizing:border-box;outline:none"/></div>
+        <button (click)="salvar()" style="width:100%;padding:16px;background:linear-gradient(135deg,#00C896,#00a07a);border:none;border-radius:12px;color:#0F1225;font-size:16px;font-weight:700;cursor:pointer">✅ Criar Condomínio + Síndico</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal editar condomínio -->
+  <div *ngIf="editandoAberto" style="position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:1000;display:flex;align-items:flex-end;justify-content:center" (click)="editandoAberto=false">
+    <div style="background:#1E2444;border-radius:24px 24px 0 0;width:100%;max-width:600px;max-height:90vh;overflow-y:auto" (click)="$event.stopPropagation()">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:20px 24px 0">
+        <h3 style="color:#F5F7FF;font-size:18px;font-weight:700;margin:0">Editar Condomínio</h3>
+        <button (click)="editandoAberto=false" style="background:rgba(255,255,255,0.1);border:none;border-radius:50%;width:32px;height:32px;color:#F5F7FF;cursor:pointer">✕</button>
+      </div>
+      <div style="padding:20px 24px 32px">
+        <div style="margin-bottom:12px"><label style="display:block;color:#8890B5;font-size:12px;font-weight:600;text-transform:uppercase;margin-bottom:6px">Nome *</label>
+          <input [(ngModel)]="editando.nome" style="width:100%;padding:12px 14px;background:#0F1225;border:1.5px solid #2A3158;border-radius:10px;color:#F5F7FF;font-size:15px;box-sizing:border-box;outline:none"/></div>
+        <div style="margin-bottom:12px"><label style="display:block;color:#8890B5;font-size:12px;font-weight:600;text-transform:uppercase;margin-bottom:6px">Endereço</label>
+          <input [(ngModel)]="editando.endereco" style="width:100%;padding:12px 14px;background:#0F1225;border:1.5px solid #2A3158;border-radius:10px;color:#F5F7FF;font-size:15px;box-sizing:border-box;outline:none"/></div>
+        <div style="display:flex;gap:12px;margin-bottom:12px">
+          <div style="flex:1"><label style="display:block;color:#8890B5;font-size:12px;font-weight:600;text-transform:uppercase;margin-bottom:6px">Cidade</label>
+            <input [(ngModel)]="editando.cidade" style="width:100%;padding:12px 14px;background:#0F1225;border:1.5px solid #2A3158;border-radius:10px;color:#F5F7FF;font-size:15px;box-sizing:border-box;outline:none"/></div>
+          <div style="max-width:80px"><label style="display:block;color:#8890B5;font-size:12px;font-weight:600;text-transform:uppercase;margin-bottom:6px">UF</label>
+            <input [(ngModel)]="editando.estado" maxlength="2" style="width:100%;padding:12px 14px;background:#0F1225;border:1.5px solid #2A3158;border-radius:10px;color:#F5F7FF;font-size:15px;box-sizing:border-box;outline:none"/></div>
+        </div>
+        <button (click)="salvarEdicao()" style="width:100%;padding:16px;background:linear-gradient(135deg,#00C896,#00a07a);border:none;border-radius:12px;color:#0F1225;font-size:16px;font-weight:700;cursor:pointer">💾 Salvar alterações</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal vincular síndico -->
+  <div *ngIf="sindicoAberto" style="position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:1000;display:flex;align-items:flex-end;justify-content:center" (click)="sindicoAberto=false">
+    <div style="background:#1E2444;border-radius:24px 24px 0 0;width:100%;max-width:600px;max-height:90vh;overflow-y:auto" (click)="$event.stopPropagation()">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:20px 24px 0">
+        <h3 style="color:#F5F7FF;font-size:18px;font-weight:700;margin:0">Vincular Síndico</h3>
+        <button (click)="sindicoAberto=false" style="background:rgba(255,255,255,0.1);border:none;border-radius:50%;width:32px;height:32px;color:#F5F7FF;cursor:pointer">✕</button>
+      </div>
+      <div style="padding:20px 24px 32px">
+        <p style="color:#8890B5;font-size:13px;margin:0 0 16px">Condomínio: <strong style="color:#F5F7FF">{{ condominioSelecionado?.nome }}</strong></p>
+        <p style="color:#00C896;font-size:12px;font-weight:700;text-transform:uppercase;margin:0 0 12px">Novo Síndico</p>
+        <div style="margin-bottom:12px"><label style="display:block;color:#8890B5;font-size:12px;font-weight:600;text-transform:uppercase;margin-bottom:6px">Nome *</label>
+          <input [(ngModel)]="novoSindico.nome" style="width:100%;padding:12px 14px;background:#0F1225;border:1.5px solid #2A3158;border-radius:10px;color:#F5F7FF;font-size:15px;box-sizing:border-box;outline:none"/></div>
+        <div style="margin-bottom:12px"><label style="display:block;color:#8890B5;font-size:12px;font-weight:600;text-transform:uppercase;margin-bottom:6px">E-mail *</label>
+          <input type="email" [(ngModel)]="novoSindico.email" style="width:100%;padding:12px 14px;background:#0F1225;border:1.5px solid #2A3158;border-radius:10px;color:#F5F7FF;font-size:15px;box-sizing:border-box;outline:none"/></div>
+        <div style="margin-bottom:20px"><label style="display:block;color:#8890B5;font-size:12px;font-weight:600;text-transform:uppercase;margin-bottom:6px">Senha *</label>
+          <input type="password" [(ngModel)]="novoSindico.senha" style="width:100%;padding:12px 14px;background:#0F1225;border:1.5px solid #2A3158;border-radius:10px;color:#F5F7FF;font-size:15px;box-sizing:border-box;outline:none"/></div>
+        <button (click)="salvarSindico()" style="width:100%;padding:16px;background:linear-gradient(135deg,#C864FF,#a050cc);border:none;border-radius:12px;color:#fff;font-size:16px;font-weight:700;cursor:pointer">🛡️ Criar e Vincular Síndico</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal editar condomínio -->
+  <div *ngIf="editandoAberto" style="position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:1000;display:flex;align-items:flex-end;justify-content:center" (click)="editandoAberto=false">
+    <div style="background:#1E2444;border-radius:24px 24px 0 0;width:100%;max-width:600px;max-height:90vh;overflow-y:auto" (click)="$event.stopPropagation()">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:20px 24px 0">
+        <h3 style="color:#F5F7FF;font-size:18px;font-weight:700;margin:0">Editar Condomínio</h3>
+        <button (click)="editandoAberto=false" style="background:rgba(255,255,255,0.1);border:none;border-radius:50%;width:32px;height:32px;color:#F5F7FF;cursor:pointer">✕</button>
+      </div>
+      <div style="padding:20px 24px 32px">
+        <div style="margin-bottom:12px"><label style="display:block;color:#8890B5;font-size:12px;font-weight:600;text-transform:uppercase;margin-bottom:6px">Nome *</label>
+          <input [(ngModel)]="editando.nome" style="width:100%;padding:12px 14px;background:#0F1225;border:1.5px solid #2A3158;border-radius:10px;color:#F5F7FF;font-size:15px;box-sizing:border-box;outline:none"/></div>
+        <div style="margin-bottom:12px"><label style="display:block;color:#8890B5;font-size:12px;font-weight:600;text-transform:uppercase;margin-bottom:6px">Endereço</label>
+          <input [(ngModel)]="editando.endereco" style="width:100%;padding:12px 14px;background:#0F1225;border:1.5px solid #2A3158;border-radius:10px;color:#F5F7FF;font-size:15px;box-sizing:border-box;outline:none"/></div>
+        <div style="display:flex;gap:12px;margin-bottom:12px">
+          <div style="flex:1"><label style="display:block;color:#8890B5;font-size:12px;font-weight:600;text-transform:uppercase;margin-bottom:6px">Cidade</label>
+            <input [(ngModel)]="editando.cidade" style="width:100%;padding:12px 14px;background:#0F1225;border:1.5px solid #2A3158;border-radius:10px;color:#F5F7FF;font-size:15px;box-sizing:border-box;outline:none"/></div>
+          <div style="max-width:80px"><label style="display:block;color:#8890B5;font-size:12px;font-weight:600;text-transform:uppercase;margin-bottom:6px">UF</label>
+            <input [(ngModel)]="editando.estado" maxlength="2" style="width:100%;padding:12px 14px;background:#0F1225;border:1.5px solid #2A3158;border-radius:10px;color:#F5F7FF;font-size:15px;box-sizing:border-box;outline:none"/></div>
+        </div>
+        <button (click)="salvarEdicao()" style="width:100%;padding:16px;background:linear-gradient(135deg,#00C896,#00a07a);border:none;border-radius:12px;color:#0F1225;font-size:16px;font-weight:700;cursor:pointer">💾 Salvar alterações</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal vincular síndico -->
+  <div *ngIf="sindicoAberto" style="position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:1000;display:flex;align-items:flex-end;justify-content:center" (click)="sindicoAberto=false">
+    <div style="background:#1E2444;border-radius:24px 24px 0 0;width:100%;max-width:600px;max-height:90vh;overflow-y:auto" (click)="$event.stopPropagation()">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:20px 24px 0">
+        <h3 style="color:#F5F7FF;font-size:18px;font-weight:700;margin:0">Vincular Síndico</h3>
+        <button (click)="sindicoAberto=false" style="background:rgba(255,255,255,0.1);border:none;border-radius:50%;width:32px;height:32px;color:#F5F7FF;cursor:pointer">✕</button>
+      </div>
+      <div style="padding:20px 24px 32px">
+        <p style="color:#8890B5;font-size:13px;margin:0 0 16px">Condomínio: <strong style="color:#F5F7FF">{{ condominioSelecionado?.nome }}</strong></p>
+        <p style="color:#00C896;font-size:12px;font-weight:700;text-transform:uppercase;margin:0 0 12px">Novo Síndico</p>
+        <div style="margin-bottom:12px"><label style="display:block;color:#8890B5;font-size:12px;font-weight:600;text-transform:uppercase;margin-bottom:6px">Nome *</label>
+          <input [(ngModel)]="novoSindico.nome" style="width:100%;padding:12px 14px;background:#0F1225;border:1.5px solid #2A3158;border-radius:10px;color:#F5F7FF;font-size:15px;box-sizing:border-box;outline:none"/></div>
+        <div style="margin-bottom:12px"><label style="display:block;color:#8890B5;font-size:12px;font-weight:600;text-transform:uppercase;margin-bottom:6px">E-mail *</label>
+          <input type="email" [(ngModel)]="novoSindico.email" style="width:100%;padding:12px 14px;background:#0F1225;border:1.5px solid #2A3158;border-radius:10px;color:#F5F7FF;font-size:15px;box-sizing:border-box;outline:none"/></div>
+        <div style="margin-bottom:20px"><label style="display:block;color:#8890B5;font-size:12px;font-weight:600;text-transform:uppercase;margin-bottom:6px">Senha *</label>
+          <input type="password" [(ngModel)]="novoSindico.senha" style="width:100%;padding:12px 14px;background:#0F1225;border:1.5px solid #2A3158;border-radius:10px;color:#F5F7FF;font-size:15px;box-sizing:border-box;outline:none"/></div>
+        <button (click)="salvarSindico()" style="width:100%;padding:16px;background:linear-gradient(135deg,#C864FF,#a050cc);border:none;border-radius:12px;color:#fff;font-size:16px;font-weight:700;cursor:pointer">🛡️ Criar e Vincular Síndico</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal editar condomínio -->
+  <div *ngIf="editandoAberto" style="position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:1000;display:flex;align-items:flex-end;justify-content:center" (click)="editandoAberto=false">
+    <div style="background:#1E2444;border-radius:24px 24px 0 0;width:100%;max-width:600px;max-height:90vh;overflow-y:auto" (click)="$event.stopPropagation()">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:20px 24px 0">
+        <h3 style="color:#F5F7FF;font-size:18px;font-weight:700;margin:0">Editar Condomínio</h3>
+        <button (click)="editandoAberto=false" style="background:rgba(255,255,255,0.1);border:none;border-radius:50%;width:32px;height:32px;color:#F5F7FF;cursor:pointer">✕</button>
+      </div>
+      <div style="padding:20px 24px 32px">
+        <div style="margin-bottom:12px"><label style="display:block;color:#8890B5;font-size:12px;font-weight:600;text-transform:uppercase;margin-bottom:6px">Nome *</label>
+          <input [(ngModel)]="editando.nome" style="width:100%;padding:12px 14px;background:#0F1225;border:1.5px solid #2A3158;border-radius:10px;color:#F5F7FF;font-size:15px;box-sizing:border-box;outline:none"/></div>
+        <div style="margin-bottom:12px"><label style="display:block;color:#8890B5;font-size:12px;font-weight:600;text-transform:uppercase;margin-bottom:6px">Endereço</label>
+          <input [(ngModel)]="editando.endereco" style="width:100%;padding:12px 14px;background:#0F1225;border:1.5px solid #2A3158;border-radius:10px;color:#F5F7FF;font-size:15px;box-sizing:border-box;outline:none"/></div>
+        <div style="display:flex;gap:12px;margin-bottom:20px">
+          <div style="flex:1"><label style="display:block;color:#8890B5;font-size:12px;font-weight:600;text-transform:uppercase;margin-bottom:6px">Cidade</label>
+            <input [(ngModel)]="editando.cidade" style="width:100%;padding:12px 14px;background:#0F1225;border:1.5px solid #2A3158;border-radius:10px;color:#F5F7FF;font-size:15px;box-sizing:border-box;outline:none"/></div>
+          <div style="max-width:80px"><label style="display:block;color:#8890B5;font-size:12px;font-weight:600;text-transform:uppercase;margin-bottom:6px">UF</label>
+            <input [(ngModel)]="editando.estado" maxlength="2" style="width:100%;padding:12px 14px;background:#0F1225;border:1.5px solid #2A3158;border-radius:10px;color:#F5F7FF;font-size:15px;box-sizing:border-box;outline:none"/></div>
+        </div>
+        <button (click)="salvarEdicao()" style="width:100%;padding:16px;background:linear-gradient(135deg,#00C896,#00a07a);border:none;border-radius:12px;color:#0F1225;font-size:16px;font-weight:700;cursor:pointer">💾 Salvar alterações</button>
+      </div>
+    </div>
+  </div>
+  <!-- Modal vincular síndico -->
+  <div *ngIf="sindicoAberto" style="position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:1000;display:flex;align-items:flex-end;justify-content:center" (click)="sindicoAberto=false">
+    <div style="background:#1E2444;border-radius:24px 24px 0 0;width:100%;max-width:600px;max-height:90vh;overflow-y:auto" (click)="$event.stopPropagation()">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:20px 24px 0">
+        <h3 style="color:#F5F7FF;font-size:18px;font-weight:700;margin:0">Vincular Síndico</h3>
+        <button (click)="sindicoAberto=false" style="background:rgba(255,255,255,0.1);border:none;border-radius:50%;width:32px;height:32px;color:#F5F7FF;cursor:pointer">✕</button>
+      </div>
+      <div style="padding:20px 24px 32px">
+        <p style="color:#8890B5;font-size:13px;margin:0 0 16px">Condomínio: <strong style="color:#F5F7FF">{{ condominioSelecionado?.nome }}</strong></p>
+        <div style="margin-bottom:12px"><label style="display:block;color:#8890B5;font-size:12px;font-weight:600;text-transform:uppercase;margin-bottom:6px">Nome *</label>
+          <input [(ngModel)]="novoSindico.nome" style="width:100%;padding:12px 14px;background:#0F1225;border:1.5px solid #2A3158;border-radius:10px;color:#F5F7FF;font-size:15px;box-sizing:border-box;outline:none"/></div>
+        <div style="margin-bottom:12px"><label style="display:block;color:#8890B5;font-size:12px;font-weight:600;text-transform:uppercase;margin-bottom:6px">E-mail *</label>
+          <input type="email" [(ngModel)]="novoSindico.email" style="width:100%;padding:12px 14px;background:#0F1225;border:1.5px solid #2A3158;border-radius:10px;color:#F5F7FF;font-size:15px;box-sizing:border-box;outline:none"/></div>
+        <div style="margin-bottom:20px"><label style="display:block;color:#8890B5;font-size:12px;font-weight:600;text-transform:uppercase;margin-bottom:6px">Senha *</label>
+          <input type="password" [(ngModel)]="novoSindico.senha" style="width:100%;padding:12px 14px;background:#0F1225;border:1.5px solid #2A3158;border-radius:10px;color:#F5F7FF;font-size:15px;box-sizing:border-box;outline:none"/></div>
+        <button (click)="salvarSindico()" style="width:100%;padding:16px;background:linear-gradient(135deg,#C864FF,#a050cc);border:none;border-radius:12px;color:#fff;font-size:16px;font-weight:700;cursor:pointer">🛡️ Criar e Vincular Síndico</button>
+      </div>
+    </div>
+  </div>
+</ion-content>

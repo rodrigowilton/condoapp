@@ -1,4 +1,3 @@
-// src/app/pages/home-sindico/home-sindico.page.ts
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
@@ -18,6 +17,8 @@ export class HomeSindicoPage implements OnInit {
   totalMoradores = 0;
   reservasPendentes = 0;
   chamadosAbertos = 0;
+  nomeUsuario = '';
+  nomeCondominio = '';
 
   constructor(
     private auth: AuthService,
@@ -25,16 +26,23 @@ export class HomeSindicoPage implements OnInit {
     private router: Router
   ) {}
 
-  ngOnInit() { this.carregar(); }
+  ngOnInit() {
+    const u = this.auth.usuario;
+    this.nomeUsuario = u?.nome || 'Síndico';
+    this.nomeCondominio = u?.condominio_nome || '';
+    this.carregar();
+  }
 
   carregar() {
     this.api.getReservas().subscribe(data => {
       this.reservas = data.filter((r: any) => r.status === 'pendente');
       this.reservasPendentes = this.reservas.length;
     });
-
     this.api.getManutencoes().subscribe(data => {
       this.chamadosAbertos = data.filter((m: any) => m.status === 'aberto').length;
+    });
+    this.api.get<any[]>('/moradores').subscribe(data => {
+      this.totalMoradores = data.length;
     });
   }
 
@@ -43,11 +51,6 @@ export class HomeSindicoPage implements OnInit {
   }
 
   ir(pagina: string) { this.router.navigate([`/sindico/${pagina}`]); }
-
   logout() { this.auth.logout(); this.router.navigate(['/login']); }
-
-  refresh(event: any) {
-    this.carregar();
-    setTimeout(() => event.target.complete(), 1000);
-  }
+  refresh(event: any) { this.carregar(); setTimeout(() => event.target.complete(), 1000); }
 }

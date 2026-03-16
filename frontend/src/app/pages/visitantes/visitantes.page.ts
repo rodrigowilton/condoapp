@@ -1,4 +1,3 @@
-// src/app/pages/visitantes/visitantes.page.ts
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -20,69 +19,55 @@ export class VisitantesPage implements OnInit {
   formularioAberto = false;
   podeRegistrar = false;
   busca = '';
-
   novoVisitante = { nome: '', apartamento: '', documento: '', placa: '', motivo: '' };
 
-  constructor(
-    private api: ApiService,
-    private auth: AuthService,
-    private toastCtrl: ToastController
-  ) {}
+  constructor(private api: ApiService, private auth: AuthService, private toastCtrl: ToastController) {}
 
-  ngOnInit() {
-    this.podeRegistrar = ['sindico', 'porteiro', 'gerencial'].includes(this.auth.perfil);
-    this.carregar();
-  }
+  ngOnInit() { this.podeRegistrar = ['sindico', 'porteiro', 'gerencial'].includes(this.auth.perfil); this.carregar(); }
+  ionViewWillEnter() { this.carregar(); }
 
   carregar() {
     this.carregando = true;
     this.api.getVisitantes().subscribe({
-      next: (data) => { this.visitantes = data; this.filtrar(); this.carregando = false; },
+      next: (d) => { this.visitantes = d; this.filtrar(); this.carregando = false; },
       error: () => { this.carregando = false; }
     });
   }
 
   filtrar() {
     const b = this.busca.toLowerCase();
-    this.visitantesFiltrados = b
-      ? this.visitantes.filter(v =>
-          v.nome?.toLowerCase().includes(b) ||
-          v.placa?.toLowerCase().includes(b) ||
-          v.documento?.toLowerCase().includes(b)
-        )
-      : [...this.visitantes];
+    this.visitantesFiltrados = b ? this.visitantes.filter(v =>
+      v.nome?.toLowerCase().includes(b) || v.placa?.toLowerCase().includes(b)
+    ) : [...this.visitantes];
   }
 
   abrirFormulario() { this.formularioAberto = true; }
-  fecharFormulario() {
-    this.formularioAberto = false;
-    this.novoVisitante = { nome: '', apartamento: '', documento: '', placa: '', motivo: '' };
-  }
+  fecharFormulario() { this.formularioAberto = false; this.novoVisitante = { nome: '', apartamento: '', documento: '', placa: '', motivo: '' }; }
 
   salvar() {
-    if (!this.novoVisitante.nome || !this.novoVisitante.apartamento) {
-      this.toast('Nome e apartamento são obrigatórios', 'warning');
-      return;
-    }
+    if (!this.novoVisitante.nome) { this.toast('Nome obrigatorio', 'warning'); return; }
     this.api.registrarVisitante(this.novoVisitante).subscribe({
-      next: () => {
-        this.toast('✅ Visitante registrado!', 'success');
-        this.fecharFormulario();
-        this.carregar();
-      },
-      error: (err) => this.toast(err.error?.erro || 'Erro ao registrar', 'danger')
+      next: () => { this.toast('Visitante registrado!', 'success'); this.fecharFormulario(); this.carregar(); },
+      error: () => this.toast('Erro ao registrar', 'danger')
     });
   }
 
   registrarSaida(id: string) {
-    this.api.patch(`/visitantes/${id}/saida`, {}).subscribe({
-      next: () => { this.toast('Saída registrada!', 'medium'); this.carregar(); }
-    });
+    if (confirm('Registrar saída deste visitante?')) {
+      this.api.atualizarStatusVisitante(id, 'saiu').subscribe({
+        next: () => { this.toast('Saida registrada!', 'success'); this.carregar(); },
+        error: () => this.toast('Erro ao registrar saida', 'danger')
+      });
+    }
   }
 
-  getCorStatus(status: string): string {
-    const cores: any = { autorizado: 'success', aguardando: 'warning', recusado: 'danger', saiu: 'medium' };
-    return cores[status] || 'medium';
+  deletar(id: string) {
+    if (confirm('Excluir este visitante?')) {
+      this.api.deletarVisitante(id).subscribe({
+        next: () => { this.toast('Removido!', 'medium'); this.carregar(); },
+        error: () => this.toast('Erro ao excluir', 'danger')
+      });
+    }
   }
 
   async toast(msg: string, color: string) {

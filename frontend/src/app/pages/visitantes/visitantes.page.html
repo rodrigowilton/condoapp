@@ -1,118 +1,104 @@
-<!-- src/app/pages/visitantes/visitantes.page.html -->
 <ion-header>
-  <ion-toolbar color="primary">
-    <ion-buttons slot="start"><ion-back-button></ion-back-button></ion-buttons>
+  <ion-toolbar>
+    <ion-buttons slot="start"><ion-back-button defaultHref="/sindico/home" text="Voltar"></ion-back-button></ion-buttons>
     <ion-title>🚗 Visitantes</ion-title>
-    <ion-buttons slot="end" *ngIf="podeRegistrar">
-      <ion-button (click)="abrirFormulario()">
-        <ion-icon name="add-outline"></ion-icon>
-      </ion-button>
+    <ion-buttons slot="end">
+      <ion-button *ngIf="podeRegistrar" (click)="abrirFormulario()"><ion-icon name="add-outline"></ion-icon></ion-button>
     </ion-buttons>
   </ion-toolbar>
-  <ion-toolbar>
-    <ion-searchbar [(ngModel)]="busca" (ionInput)="filtrar()"
-      placeholder="Buscar por nome ou placa..." debounce="300">
-    </ion-searchbar>
-  </ion-toolbar>
 </ion-header>
-
 <ion-content>
-  <ion-refresher slot="fixed" (ionRefresh)="refresh($event)">
-    <ion-refresher-content></ion-refresher-content>
-  </ion-refresher>
-
-  <div *ngIf="carregando" class="loading-area">
-    <ion-spinner name="crescent" color="primary"></ion-spinner>
+  <ion-refresher slot="fixed" (ionRefresh)="refresh($event)"><ion-refresher-content></ion-refresher-content></ion-refresher>
+  <div style="padding:16px">
+    <input [(ngModel)]="busca" (ngModelChange)="filtrar()" placeholder="🔍 Buscar por nome, placa ou documento..."
+      style="width:100%;padding:12px 14px;background:#1E2444;border:1.5px solid #2A3158;border-radius:12px;color:#F5F7FF;font-size:14px;box-sizing:border-box;outline:none"/>
   </div>
-
-  <div *ngIf="!carregando && visitantesFiltrados.length === 0" class="empty-state">
-    <div class="empty-icon">🚗</div>
-    <p>Nenhum visitante registrado</p>
+  <div *ngIf="carregando" style="text-align:center;padding:60px"><ion-spinner color="primary"></ion-spinner></div>
+  <div *ngIf="!carregando && visitantesFiltrados.length===0" style="text-align:center;padding:60px">
+    <div style="font-size:64px;margin-bottom:16px">🚗</div>
+    <p style="color:#8890B5">Nenhum visitante registrado</p>
   </div>
-
-  <ion-card *ngFor="let v of visitantesFiltrados" class="visitante-card">
-    <ion-card-header>
-      <div class="visitante-header">
+  <div style="padding:0 16px;display:flex;flex-direction:column;gap:12px">
+    <div *ngFor="let v of visitantesFiltrados" style="background:#1E2444;border-radius:16px;padding:16px;border:1px solid rgba(255,255,255,0.05)">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
         <div>
-          <ion-card-title>{{ v.nome }}</ion-card-title>
-          <ion-card-subtitle>
-            Visita: {{ v.morador_nome }} — Apto {{ v.apartamento }}
-          </ion-card-subtitle>
+          <h3 style="color:#F5F7FF;font-size:16px;font-weight:700;margin:0 0 4px">{{ v.nome }}</h3>
+          <p style="color:#8890B5;font-size:13px;margin:0">{{ v.morador_nome ? 'Visita: ' + v.morador_nome : '' }} {{ v.apartamento ? '· Apto ' + v.apartamento : '' }}</p>
         </div>
-        <ion-badge [color]="getCorStatus(v.status)">{{ v.status }}</ion-badge>
+        <span [style.background]="v.status==='autorizado'?'rgba(0,200,150,0.15)':v.status==='saiu'?'rgba(150,150,150,0.15)':'rgba(255,209,102,0.15)'"
+              [style.color]="v.status==='autorizado'?'#00C896':v.status==='saiu'?'#8890B5':'#FFD166'"
+              style="font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px">
+          {{ v.status }}
+        </span>
       </div>
-    </ion-card-header>
-    <ion-card-content>
-      <ion-grid>
-        <ion-row>
-          <ion-col size="6" *ngIf="v.documento">
-            <small class="label">Documento</small>
-            <p>{{ v.documento }}</p>
-          </ion-col>
-          <ion-col size="6" *ngIf="v.placa">
-            <small class="label">Placa</small>
-            <p>🚗 {{ v.placa }}</p>
-          </ion-col>
-          <ion-col size="12" *ngIf="v.motivo">
-            <small class="label">Motivo</small>
-            <p>{{ v.motivo }}</p>
-          </ion-col>
-          <ion-col size="6">
-            <small class="label">Entrada</small>
-            <p>{{ (v.entrada_em || v.criado_em) | date:'dd/MM HH:mm' }}</p>
-          </ion-col>
-          <ion-col size="6" *ngIf="v.saida_em">
-            <small class="label">Saída</small>
-            <p>{{ v.saida_em | date:'dd/MM HH:mm' }}</p>
-          </ion-col>
-        </ion-row>
-      </ion-grid>
-    </ion-card-content>
-    <div class="card-actions" *ngIf="v.status === 'autorizado' && podeRegistrar">
-      <ion-button fill="clear" size="small" color="medium" (click)="registrarSaida(v.id)">
-        <ion-icon name="exit-outline" slot="start"></ion-icon> Registrar Saída
-      </ion-button>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px">
+        <span *ngIf="v.documento" style="color:#8890B5;font-size:12px">📄 {{ v.documento }}</span>
+        <span *ngIf="v.placa" style="color:#8890B5;font-size:12px">🚗 {{ v.placa }}</span>
+        <span *ngIf="v.motivo" style="color:#8890B5;font-size:12px">💬 {{ v.motivo }}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <span style="color:#8890B5;font-size:12px">{{ v.entrada_em | date:'dd/MM/yyyy HH:mm' }}</span>
+        <div style="display:flex;gap:8px">
+          <button *ngIf="v.status==='autorizado' && podeRegistrar" (click)="registrarSaida(v.id)"
+            style="background:rgba(255,209,102,0.15);border:none;border-radius:8px;color:#FFD166;padding:6px 12px;cursor:pointer;font-size:13px;font-weight:600">
+            🚪 Saída
+          </button>
+          <button *ngIf="podeRegistrar" (click)="deletar(v.id)"
+            style="background:rgba(255,100,130,0.15);border:none;border-radius:8px;color:#FF6482;padding:6px 12px;cursor:pointer;font-size:13px">
+            🗑️
+          </button>
+        </div>
+      </div>
     </div>
-  </ion-card>
+  </div>
+  <div *ngIf="formularioAberto" style="position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:1000;display:flex;align-items:flex-end;justify-content:center" (click)="fecharFormulario()">
+    <div style="background:#1E2444;border-radius:24px 24px 0 0;width:100%;max-width:600px;max-height:90vh;overflow-y:auto" (click)="$event.stopPropagation()">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:20px 24px 0">
+        <h3 style="color:#F5F7FF;font-size:18px;font-weight:700;margin:0">Registrar Visitante</h3>
+        <button (click)="fecharFormulario()" style="background:rgba(255,255,255,0.1);border:none;border-radius:50%;width:32px;height:32px;color:#F5F7FF;cursor:pointer">✕</button>
+      </div>
+      <div style="padding:20px 24px 32px">
+        <div style="margin-bottom:14px">
+          <label style="display:block;color:#8890B5;font-size:12px;font-weight:600;text-transform:uppercase;margin-bottom:6px">Nome *</label>
+          <input [(ngModel)]="novoVisitante.nome" placeholder="Nome completo" style="width:100%;padding:12px 14px;background:#0F1225;border:1.5px solid #2A3158;border-radius:10px;color:#F5F7FF;font-size:15px;box-sizing:border-box;outline:none"/>
+        </div>
+        <div style="margin-bottom:14px">
+          <label style="display:block;color:#8890B5;font-size:12px;font-weight:600;text-transform:uppercase;margin-bottom:6px">Apartamento *</label>
+          <input [(ngModel)]="novoVisitante.apartamento" placeholder="Ex: 101" style="width:100%;padding:12px 14px;background:#0F1225;border:1.5px solid #2A3158;border-radius:10px;color:#F5F7FF;font-size:15px;box-sizing:border-box;outline:none"/>
+        </div>
+        <div style="margin-bottom:14px">
+          <label style="display:block;color:#8890B5;font-size:12px;font-weight:600;text-transform:uppercase;margin-bottom:6px">Documento</label>
+          <input [(ngModel)]="novoVisitante.documento" placeholder="RG ou CPF" style="width:100%;padding:12px 14px;background:#0F1225;border:1.5px solid #2A3158;border-radius:10px;color:#F5F7FF;font-size:15px;box-sizing:border-box;outline:none"/>
+        </div>
+        <div style="margin-bottom:14px">
+          <label style="display:block;color:#8890B5;font-size:12px;font-weight:600;text-transform:uppercase;margin-bottom:6px">Placa do veículo</label>
+          <input [(ngModel)]="novoVisitante.placa" placeholder="Ex: ABC-1234" style="width:100%;padding:12px 14px;background:#0F1225;border:1.5px solid #2A3158;border-radius:10px;color:#F5F7FF;font-size:15px;box-sizing:border-box;outline:none"/>
+        </div>
+        <div style="margin-bottom:20px">
+          <label style="display:block;color:#8890B5;font-size:12px;font-weight:600;text-transform:uppercase;margin-bottom:6px">Motivo</label>
+          <input [(ngModel)]="novoVisitante.motivo" placeholder="Ex: Visita familiar" style="width:100%;padding:12px 14px;background:#0F1225;border:1.5px solid #2A3158;border-radius:10px;color:#F5F7FF;font-size:15px;box-sizing:border-box;outline:none"/>
+        </div>
+        <button (click)="salvar()" style="width:100%;padding:16px;background:linear-gradient(135deg,#00C896,#00a07a);border:none;border-radius:12px;color:#0F1225;font-size:16px;font-weight:700;cursor:pointer">🚗 Registrar Entrada</button>
+      </div>
+    </div>
+  </div>
 
-  <!-- Modal registrar visitante -->
-  <ion-modal [isOpen]="formularioAberto" (didDismiss)="fecharFormulario()">
-    <ng-template>
-      <ion-header>
-        <ion-toolbar>
-          <ion-title>Registrar Visitante</ion-title>
-          <ion-buttons slot="end">
-            <ion-button (click)="fecharFormulario()">Cancelar</ion-button>
-          </ion-buttons>
-        </ion-toolbar>
-      </ion-header>
-      <ion-content class="ion-padding">
-        <ion-item>
-          <ion-label position="floating">Nome do Visitante *</ion-label>
-          <ion-input [(ngModel)]="novoVisitante.nome"></ion-input>
-        </ion-item>
-        <ion-item>
-          <ion-label position="floating">Apartamento que visita *</ion-label>
-          <ion-input [(ngModel)]="novoVisitante.apartamento" placeholder="Ex: 302"></ion-input>
-        </ion-item>
-        <ion-item>
-          <ion-label position="floating">Documento (RG/CPF)</ion-label>
-          <ion-input [(ngModel)]="novoVisitante.documento"></ion-input>
-        </ion-item>
-        <ion-item>
-          <ion-label position="floating">Placa do veículo</ion-label>
-          <ion-input [(ngModel)]="novoVisitante.placa" placeholder="Ex: ABC-1234"></ion-input>
-        </ion-item>
-        <ion-item>
-          <ion-label position="floating">Motivo da visita</ion-label>
-          <ion-input [(ngModel)]="novoVisitante.motivo" placeholder="Ex: Visita familiar"></ion-input>
-        </ion-item>
-        <ion-button expand="block" color="primary" (click)="salvar()" style="margin-top:24px">
-          <ion-icon name="person-add-outline" slot="start"></ion-icon>
-          Registrar Entrada
-        </ion-button>
-      </ion-content>
-    </ng-template>
-  </ion-modal>
+  <!-- FAB -->
+  <div style="position:fixed;bottom:80px;right:24px;z-index:100">
+    <button (click)="abrirFormulario()" style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#00C896,#00a07a);border:none;color:#0F1225;font-size:28px;cursor:pointer;box-shadow:0 8px 24px rgba(0,200,150,0.4)" id="fab-add">+</button>
+  </div>
 
+  <!-- Barra de navegação inferior -->
+  <div style="position:fixed;bottom:0;left:0;right:0;background:#1A1F3C;border-top:1px solid rgba(255,255,255,0.08);display:flex;z-index:200">
+    <button onclick="history.back()" style="flex:1;padding:14px;background:transparent;border:none;color:#8890B5;font-size:12px;font-weight:600;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px">
+      <span style="font-size:20px">←</span>
+      Voltar
+    </button>
+    <button onclick="window.location.href='/#/sindico/home'" style="flex:1;padding:14px;background:transparent;border:none;color:#00C896;font-size:12px;font-weight:600;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px">
+      <span style="font-size:20px">🏠</span>
+      Início
+    </button>
+  </div>
+  <!-- Espaço para a barra inferior -->
+  <div style="height:70px"></div>
 </ion-content>

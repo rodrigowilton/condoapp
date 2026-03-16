@@ -1,0 +1,180 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start"><ion-back-button defaultHref="/sindico/home" text="Voltar"></ion-back-button></ion-buttons>
+    <ion-title>📋 Histórico</ion-title>
+  </ion-toolbar>
+</ion-header>
+<ion-content>
+  <!-- Abas -->
+  <div style="display:flex;gap:6px;padding:16px;overflow-x:auto">
+    <button (click)="aba='manutencoes'" [style.background]="aba==='manutencoes'?'#00C896':'#1E2444'" [style.color]="aba==='manutencoes'?'#0F1225':'#F5F7FF'" style="padding:8px 14px;border:none;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap">🔧 Chamados</button>
+    <button (click)="aba='encomendas'" [style.background]="aba==='encomendas'?'#00C896':'#1E2444'" [style.color]="aba==='encomendas'?'#0F1225':'#F5F7FF'" style="padding:8px 14px;border:none;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap">📦 Encomendas</button>
+    <button (click)="aba='visitantes'" [style.background]="aba==='visitantes'?'#00C896':'#1E2444'" [style.color]="aba==='visitantes'?'#0F1225':'#F5F7FF'" style="padding:8px 14px;border:none;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap">🚗 Visitantes</button>
+    <button (click)="aba='reservas'" [style.background]="aba==='reservas'?'#00C896':'#1E2444'" [style.color]="aba==='reservas'?'#0F1225':'#F5F7FF'" style="padding:8px 14px;border:none;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap">🏊 Reservas</button>
+  </div>
+
+  <div *ngIf="carregando" style="text-align:center;padding:60px"><ion-spinner color="primary"></ion-spinner></div>
+
+  <!-- MANUTENCOES -->
+  <div *ngIf="aba==='manutencoes'" style="padding:0 16px 16px;display:flex;flex-direction:column;gap:12px">
+    <div *ngIf="manutencoes.length===0" style="text-align:center;padding:40px;color:#8890B5">Nenhum chamado concluído</div>
+    <div *ngFor="let m of manutencoes" style="background:#1E2444;border-radius:16px;padding:16px;border:1px solid rgba(255,255,255,0.05);border-left:4px solid #00C896">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+        <h3 style="color:#F5F7FF;font-size:15px;font-weight:700;margin:0">{{ m.titulo }}</h3>
+        <span style="background:rgba(0,200,150,0.15);color:#00C896;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px">✅ Concluído</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div style="background:#0F1225;border-radius:10px;padding:10px">
+          <p style="color:#8890B5;font-size:11px;margin:0 0 2px;text-transform:uppercase">Solicitante</p>
+          <p style="color:#F5F7FF;font-size:13px;font-weight:600;margin:0">{{ m.solicitante_nome }}</p>
+        </div>
+        <div style="background:#0F1225;border-radius:10px;padding:10px">
+          <p style="color:#8890B5;font-size:11px;margin:0 0 2px;text-transform:uppercase">Apartamento</p>
+          <p style="color:#F5F7FF;font-size:13px;font-weight:600;margin:0">{{ m.apartamento || '-' }}</p>
+        </div>
+        <div style="background:#0F1225;border-radius:10px;padding:10px">
+          <p style="color:#8890B5;font-size:11px;margin:0 0 2px;text-transform:uppercase">Aberto em</p>
+          <p style="color:#F5F7FF;font-size:13px;font-weight:600;margin:0">{{ m.criado_em | date:'dd/MM/yyyy HH:mm' }}</p>
+        </div>
+        <div style="background:#0F1225;border-radius:10px;padding:10px">
+          <p style="color:#8890B5;font-size:11px;margin:0 0 2px;text-transform:uppercase">Concluído em</p>
+          <p style="color:#F5F7FF;font-size:13px;font-weight:600;margin:0">{{ m.resolvido_em | date:'dd/MM/yyyy HH:mm' }}</p>
+        </div>
+        <div *ngIf="m.local" style="background:#0F1225;border-radius:10px;padding:10px;grid-column:span 2">
+          <p style="color:#8890B5;font-size:11px;margin:0 0 2px;text-transform:uppercase">Local</p>
+          <p style="color:#F5F7FF;font-size:13px;font-weight:600;margin:0">{{ m.local }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ENCOMENDAS -->
+  <div *ngIf="aba==='encomendas'" style="padding:0 16px 16px;display:flex;flex-direction:column;gap:12px">
+    <div *ngIf="encomendas.length===0" style="text-align:center;padding:40px;color:#8890B5">Nenhuma encomenda retirada</div>
+    <div *ngFor="let e of encomendas" style="background:#1E2444;border-radius:16px;padding:16px;border:1px solid rgba(255,255,255,0.05);border-left:4px solid #00C896">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+        <h3 style="color:#F5F7FF;font-size:15px;font-weight:700;margin:0">{{ e.remetente || 'Sem remetente' }}</h3>
+        <span style="background:rgba(0,200,150,0.15);color:#00C896;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px">✅ Retirado</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div style="background:#0F1225;border-radius:10px;padding:10px">
+          <p style="color:#8890B5;font-size:11px;margin:0 0 2px;text-transform:uppercase">Morador</p>
+          <p style="color:#F5F7FF;font-size:13px;font-weight:600;margin:0">{{ e.morador_nome || '-' }}</p>
+        </div>
+        <div style="background:#0F1225;border-radius:10px;padding:10px">
+          <p style="color:#8890B5;font-size:11px;margin:0 0 2px;text-transform:uppercase">Apartamento</p>
+          <p style="color:#F5F7FF;font-size:13px;font-weight:600;margin:0">{{ e.apartamento || '-' }}</p>
+        </div>
+        <div style="background:#0F1225;border-radius:10px;padding:10px">
+          <p style="color:#8890B5;font-size:11px;margin:0 0 2px;text-transform:uppercase">Prateleira</p>
+          <p style="color:#F5F7FF;font-size:13px;font-weight:600;margin:0">{{ e.prateleira }}</p>
+        </div>
+        <div style="background:#0F1225;border-radius:10px;padding:10px">
+          <p style="color:#8890B5;font-size:11px;margin:0 0 2px;text-transform:uppercase">Chegou em</p>
+          <p style="color:#F5F7FF;font-size:13px;font-weight:600;margin:0">{{ e.criado_em | date:'dd/MM/yyyy HH:mm' }}</p>
+        </div>
+        <div style="background:#0F1225;border-radius:10px;padding:10px;grid-column:span 2">
+          <p style="color:#8890B5;font-size:11px;margin:0 0 2px;text-transform:uppercase">Retirado em</p>
+          <p style="color:#F5F7FF;font-size:13px;font-weight:600;margin:0">{{ e.retirado_em | date:'dd/MM/yyyy HH:mm' }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- VISITANTES -->
+  <div *ngIf="aba==='visitantes'" style="padding:0 16px 16px;display:flex;flex-direction:column;gap:12px">
+    <div *ngIf="visitantes.length===0" style="text-align:center;padding:40px;color:#8890B5">Nenhum visitante registrado</div>
+    <div *ngFor="let v of visitantes" style="background:#1E2444;border-radius:16px;padding:16px;border:1px solid rgba(255,255,255,0.05)" [style.border-left]="v.status==='saiu'?'4px solid #8890B5':v.status==='autorizado'?'4px solid #00C896':'4px solid #FFD166'">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+        <h3 style="color:#F5F7FF;font-size:15px;font-weight:700;margin:0">{{ v.nome }}</h3>
+        <span [style.background]="v.status==='saiu'?'rgba(150,150,150,0.15)':v.status==='autorizado'?'rgba(0,200,150,0.15)':'rgba(255,209,102,0.15)'"
+              [style.color]="v.status==='saiu'?'#8890B5':v.status==='autorizado'?'#00C896':'#FFD166'"
+              style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px">
+          {{ v.status === 'saiu' ? '🚪 Saiu' : v.status === 'autorizado' ? '✅ No local' : v.status }}
+        </span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div style="background:#0F1225;border-radius:10px;padding:10px">
+          <p style="color:#8890B5;font-size:11px;margin:0 0 2px;text-transform:uppercase">Visita</p>
+          <p style="color:#F5F7FF;font-size:13px;font-weight:600;margin:0">{{ v.morador_nome || '-' }}</p>
+        </div>
+        <div style="background:#0F1225;border-radius:10px;padding:10px">
+          <p style="color:#8890B5;font-size:11px;margin:0 0 2px;text-transform:uppercase">Apartamento</p>
+          <p style="color:#F5F7FF;font-size:13px;font-weight:600;margin:0">{{ v.apartamento || '-' }}</p>
+        </div>
+        <div style="background:#0F1225;border-radius:10px;padding:10px">
+          <p style="color:#8890B5;font-size:11px;margin:0 0 2px;text-transform:uppercase">Entrada</p>
+          <p style="color:#F5F7FF;font-size:13px;font-weight:600;margin:0">{{ v.entrada_em | date:'dd/MM/yyyy HH:mm' }}</p>
+        </div>
+        <div style="background:#0F1225;border-radius:10px;padding:10px">
+          <p style="color:#8890B5;font-size:11px;margin:0 0 2px;text-transform:uppercase">Saída</p>
+          <p style="color:#F5F7FF;font-size:13px;font-weight:600;margin:0">{{ v.saida_em ? (v.saida_em | date:'dd/MM/yyyy HH:mm') : '-' }}</p>
+        </div>
+        <div *ngIf="v.documento" style="background:#0F1225;border-radius:10px;padding:10px">
+          <p style="color:#8890B5;font-size:11px;margin:0 0 2px;text-transform:uppercase">Documento</p>
+          <p style="color:#F5F7FF;font-size:13px;font-weight:600;margin:0">{{ v.documento }}</p>
+        </div>
+        <div *ngIf="v.placa" style="background:#0F1225;border-radius:10px;padding:10px">
+          <p style="color:#8890B5;font-size:11px;margin:0 0 2px;text-transform:uppercase">Placa</p>
+          <p style="color:#F5F7FF;font-size:13px;font-weight:600;margin:0">{{ v.placa }}</p>
+        </div>
+        <div *ngIf="v.motivo" style="background:#0F1225;border-radius:10px;padding:10px;grid-column:span 2">
+          <p style="color:#8890B5;font-size:11px;margin:0 0 2px;text-transform:uppercase">Motivo</p>
+          <p style="color:#F5F7FF;font-size:13px;font-weight:600;margin:0">{{ v.motivo }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESERVAS -->
+  <div *ngIf="aba==='reservas'" style="padding:0 16px 16px;display:flex;flex-direction:column;gap:12px">
+    <div *ngIf="reservas.length===0" style="text-align:center;padding:40px;color:#8890B5">Nenhuma reserva no histórico</div>
+    <div *ngFor="let r of reservas" style="background:#1E2444;border-radius:16px;padding:16px;border:1px solid rgba(255,255,255,0.05)" [style.border-left]="r.status==='aprovada'?'4px solid #00C896':'4px solid #FF6482'">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+        <h3 style="color:#F5F7FF;font-size:15px;font-weight:700;margin:0">{{ r.espaco_nome }}</h3>
+        <span [style.background]="r.status==='aprovada'?'rgba(0,200,150,0.15)':'rgba(255,100,130,0.15)'"
+              [style.color]="r.status==='aprovada'?'#00C896':'#FF6482'"
+              style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px">
+          {{ r.status === 'aprovada' ? '✅ Aprovada' : '❌ Recusada' }}
+        </span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div style="background:#0F1225;border-radius:10px;padding:10px">
+          <p style="color:#8890B5;font-size:11px;margin:0 0 2px;text-transform:uppercase">Morador</p>
+          <p style="color:#F5F7FF;font-size:13px;font-weight:600;margin:0">{{ r.usuario_nome }}</p>
+        </div>
+        <div style="background:#0F1225;border-radius:10px;padding:10px">
+          <p style="color:#8890B5;font-size:11px;margin:0 0 2px;text-transform:uppercase">Apartamento</p>
+          <p style="color:#F5F7FF;font-size:13px;font-weight:600;margin:0">{{ r.apartamento || '-' }}</p>
+        </div>
+        <div style="background:#0F1225;border-radius:10px;padding:10px">
+          <p style="color:#8890B5;font-size:11px;margin:0 0 2px;text-transform:uppercase">Início</p>
+          <p style="color:#F5F7FF;font-size:13px;font-weight:600;margin:0">{{ r.data_inicio | date:'dd/MM/yyyy HH:mm' }}</p>
+        </div>
+        <div style="background:#0F1225;border-radius:10px;padding:10px">
+          <p style="color:#8890B5;font-size:11px;margin:0 0 2px;text-transform:uppercase">Fim</p>
+          <p style="color:#F5F7FF;font-size:13px;font-weight:600;margin:0">{{ r.data_fim | date:'dd/MM/yyyy HH:mm' }}</p>
+        </div>
+        <div *ngIf="r.observacao" style="background:#0F1225;border-radius:10px;padding:10px;grid-column:span 2">
+          <p style="color:#8890B5;font-size:11px;margin:0 0 2px;text-transform:uppercase">Observação</p>
+          <p style="color:#F5F7FF;font-size:13px;font-weight:600;margin:0">{{ r.observacao }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Barra de navegação inferior -->
+  <div style="position:fixed;bottom:0;left:0;right:0;background:#1A1F3C;border-top:1px solid rgba(255,255,255,0.08);display:flex;z-index:200">
+    <button onclick="history.back()" style="flex:1;padding:14px;background:transparent;border:none;color:#8890B5;font-size:12px;font-weight:600;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px">
+      <span style="font-size:20px">←</span>
+      Voltar
+    </button>
+    <button onclick="window.location.href='/#/sindico/home'" style="flex:1;padding:14px;background:transparent;border:none;color:#00C896;font-size:12px;font-weight:600;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px">
+      <span style="font-size:20px">🏠</span>
+      Início
+    </button>
+  </div>
+  <!-- Espaço para a barra inferior -->
+  <div style="height:70px"></div>
+</ion-content>

@@ -1,0 +1,98 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start"><ion-back-button defaultHref="/sindico/home" text="Voltar"></ion-back-button></ion-buttons>
+    <ion-title>👥 Moradores</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="abrirFormulario()"><ion-icon name="add-outline"></ion-icon></ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+<ion-content>
+  <ion-refresher slot="fixed" (ionRefresh)="refresh($event)"><ion-refresher-content></ion-refresher-content></ion-refresher>
+  <div *ngIf="carregando" style="text-align:center;padding:60px"><ion-spinner color="primary"></ion-spinner></div>
+  <div *ngIf="!carregando && moradores.length===0" style="text-align:center;padding:60px">
+    <div style="font-size:64px;margin-bottom:16px">👥</div>
+    <p style="color:#8890B5">Nenhum morador cadastrado</p>
+  </div>
+  <div style="padding:16px;display:flex;flex-direction:column;gap:12px">
+    <div *ngFor="let m of moradores" style="background:#1E2444;border-radius:16px;padding:16px;border:1px solid rgba(255,255,255,0.05)">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div style="flex:1">
+          <h3 style="color:#F5F7FF;font-size:16px;font-weight:700;margin:0 0 4px">{{ m.nome }}</h3>
+          <p style="color:#00C896;font-size:13px;font-weight:600;margin:0 0 2px">Apto {{ m.apartamento }}{{ m.bloco ? ' · Bloco ' + m.bloco : '' }}</p>
+          <p style="color:#8890B5;font-size:13px;margin:0">{{ m.email }}</p>
+          <p *ngIf="m.telefone" style="color:#8890B5;font-size:13px;margin:0">📱 {{ m.telefone }}</p>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
+          <span [style.background]="m.ativo?'rgba(0,200,150,0.15)':'rgba(150,150,150,0.15)'"
+                [style.color]="m.ativo?'#00C896':'#8890B5'"
+                style="font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px">
+            {{ m.ativo ? 'Ativo' : 'Inativo' }}
+          </span>
+          <div style="display:flex;gap:6px">
+            <button (click)="abrirEdicao(m)" style="background:rgba(0,200,150,0.15);border:none;border-radius:8px;color:#00C896;padding:6px 10px;cursor:pointer;font-size:12px">✏️</button>
+            <button (click)="deletar(m)" style="background:rgba(255,100,130,0.15);border:none;border-radius:8px;color:#FF6482;padding:6px 10px;cursor:pointer;font-size:12px">🗑️</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div *ngIf="formularioAberto" style="position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:1000;display:flex;align-items:flex-end;justify-content:center" (click)="fecharFormulario()">
+    <div style="background:#1E2444;border-radius:24px 24px 0 0;width:100%;max-width:600px;max-height:90vh;overflow-y:auto" (click)="$event.stopPropagation()">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:20px 24px 0">
+        <h3 style="color:#F5F7FF;font-size:18px;font-weight:700;margin:0">{{ editando ? 'Editar Morador' : 'Novo Morador' }}</h3>
+        <button (click)="fecharFormulario()" style="background:rgba(255,255,255,0.1);border:none;border-radius:50%;width:32px;height:32px;color:#F5F7FF;cursor:pointer">✕</button>
+      </div>
+      <div style="padding:20px 24px 32px">
+        <div style="margin-bottom:14px">
+          <label style="display:block;color:#8890B5;font-size:12px;font-weight:600;text-transform:uppercase;margin-bottom:6px">Nome *</label>
+          <input [(ngModel)]="form.nome" style="width:100%;padding:12px 14px;background:#0F1225;border:1.5px solid #2A3158;border-radius:10px;color:#F5F7FF;font-size:15px;box-sizing:border-box;outline:none"/>
+        </div>
+        <div *ngIf="!editando" style="margin-bottom:14px">
+          <label style="display:block;color:#8890B5;font-size:12px;font-weight:600;text-transform:uppercase;margin-bottom:6px">Email *</label>
+          <input type="email" [(ngModel)]="form.email" style="width:100%;padding:12px 14px;background:#0F1225;border:1.5px solid #2A3158;border-radius:10px;color:#F5F7FF;font-size:15px;box-sizing:border-box;outline:none"/>
+        </div>
+        <div *ngIf="!editando" style="margin-bottom:14px">
+          <label style="display:block;color:#8890B5;font-size:12px;font-weight:600;text-transform:uppercase;margin-bottom:6px">Senha *</label>
+          <input type="password" [(ngModel)]="form.senha" style="width:100%;padding:12px 14px;background:#0F1225;border:1.5px solid #2A3158;border-radius:10px;color:#F5F7FF;font-size:15px;box-sizing:border-box;outline:none"/>
+        </div>
+        <div style="display:flex;gap:12px;margin-bottom:14px">
+          <div style="flex:1">
+            <label style="display:block;color:#8890B5;font-size:12px;font-weight:600;text-transform:uppercase;margin-bottom:6px">Apartamento *</label>
+            <input [(ngModel)]="form.apartamento" style="width:100%;padding:12px 14px;background:#0F1225;border:1.5px solid #2A3158;border-radius:10px;color:#F5F7FF;font-size:15px;box-sizing:border-box;outline:none"/>
+          </div>
+          <div style="flex:1">
+            <label style="display:block;color:#8890B5;font-size:12px;font-weight:600;text-transform:uppercase;margin-bottom:6px">Bloco</label>
+            <input [(ngModel)]="form.bloco" style="width:100%;padding:12px 14px;background:#0F1225;border:1.5px solid #2A3158;border-radius:10px;color:#F5F7FF;font-size:15px;box-sizing:border-box;outline:none"/>
+          </div>
+        </div>
+        <div style="margin-bottom:20px">
+          <label style="display:block;color:#8890B5;font-size:12px;font-weight:600;text-transform:uppercase;margin-bottom:6px">Telefone</label>
+          <input [(ngModel)]="form.telefone" style="width:100%;padding:12px 14px;background:#0F1225;border:1.5px solid #2A3158;border-radius:10px;color:#F5F7FF;font-size:15px;box-sizing:border-box;outline:none"/>
+        </div>
+        <button (click)="salvar()" style="width:100%;padding:16px;background:linear-gradient(135deg,#00C896,#00a07a);border:none;border-radius:12px;color:#0F1225;font-size:16px;font-weight:700;cursor:pointer">
+          {{ editando ? '💾 Salvar alterações' : '👤 Cadastrar Morador' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FAB -->
+  <div style="position:fixed;bottom:80px;right:24px;z-index:100">
+    <button (click)="abrirFormulario()" style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#00C896,#00a07a);border:none;color:#0F1225;font-size:28px;cursor:pointer;box-shadow:0 8px 24px rgba(0,200,150,0.4)" id="fab-add">+</button>
+  </div>
+
+  <!-- Barra de navegação inferior -->
+  <div style="position:fixed;bottom:0;left:0;right:0;background:#1A1F3C;border-top:1px solid rgba(255,255,255,0.08);display:flex;z-index:200">
+    <button onclick="history.back()" style="flex:1;padding:14px;background:transparent;border:none;color:#8890B5;font-size:12px;font-weight:600;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px">
+      <span style="font-size:20px">←</span>
+      Voltar
+    </button>
+    <button onclick="window.location.href='/#/sindico/home'" style="flex:1;padding:14px;background:transparent;border:none;color:#00C896;font-size:12px;font-weight:600;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px">
+      <span style="font-size:20px">🏠</span>
+      Início
+    </button>
+  </div>
+  <!-- Espaço para a barra inferior -->
+  <div style="height:70px"></div>
+</ion-content>

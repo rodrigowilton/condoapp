@@ -1,0 +1,76 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start"><ion-back-button defaultHref="/sindico/home" text="Voltar"></ion-back-button></ion-buttons>
+    <ion-title>🔍 Achados e Perdidos</ion-title>
+  </ion-toolbar>
+</ion-header>
+<ion-content>
+  <ion-refresher slot="fixed" (ionRefresh)="refresh($event)"><ion-refresher-content></ion-refresher-content></ion-refresher>
+  <div *ngIf="carregando" style="text-align:center;padding:60px"><ion-spinner color="primary"></ion-spinner></div>
+  <div *ngIf="!carregando && itens.length===0" style="text-align:center;padding:60px">
+    <div style="font-size:64px;margin-bottom:16px">🔍</div>
+    <p style="color:#8890B5">Nenhum item registrado</p>
+  </div>
+  <div style="padding:16px;display:flex;flex-direction:column;gap:12px">
+    <div *ngFor="let i of itens" style="background:#1E2444;border-radius:16px;padding:16px;border:1px solid rgba(255,255,255,0.05)">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+        <div style="flex:1">
+          <h3 style="color:#F5F7FF;font-size:16px;font-weight:700;margin:0 0 4px">{{ i.descricao }}</h3>
+          <p *ngIf="i.local_encontrado" style="color:#8890B5;font-size:13px;margin:0">📍 {{ i.local_encontrado }}</p>
+          <p style="color:#8890B5;font-size:12px;margin:4px 0 0">{{ i.registrado_nome }} · {{ i.criado_em | date:'dd/MM/yyyy HH:mm' }}</p>
+        </div>
+        <span [style.background]="i.status==='disponivel'?'rgba(0,200,150,0.15)':'rgba(150,150,150,0.15)'"
+              [style.color]="i.status==='disponivel'?'#00C896':'#8890B5'"
+              style="font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;margin-left:8px;white-space:nowrap">
+          {{ i.status === 'disponivel' ? '✅ Disponível' : '📦 Retirado' }}
+        </span>
+      </div>
+      <div style="display:flex;gap:8px;justify-content:flex-end">
+        <button *ngIf="i.status==='disponivel'" (click)="retirar(i.id)"
+          style="background:rgba(0,200,150,0.15);border:none;border-radius:8px;color:#00C896;padding:6px 12px;cursor:pointer;font-size:13px;font-weight:600">
+          ✓ Retirado
+        </button>
+        <button (click)="deletar(i.id)"
+          style="background:rgba(255,100,130,0.15);border:none;border-radius:8px;color:#FF6482;padding:6px 12px;cursor:pointer;font-size:13px">
+          🗑️ Excluir
+        </button>
+      </div>
+    </div>
+  </div>
+  <div *ngIf="formularioAberto" style="position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:1000;display:flex;align-items:flex-end;justify-content:center" (click)="formularioAberto=false">
+    <div style="background:#1E2444;border-radius:24px 24px 0 0;width:100%;max-width:600px;max-height:90vh;overflow-y:auto" (click)="$event.stopPropagation()">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:20px 24px 0">
+        <h3 style="color:#F5F7FF;font-size:18px;font-weight:700;margin:0">Registrar Item</h3>
+        <button (click)="formularioAberto=false" style="background:rgba(255,255,255,0.1);border:none;border-radius:50%;width:32px;height:32px;color:#F5F7FF;cursor:pointer">✕</button>
+      </div>
+      <div style="padding:20px 24px 32px">
+        <div style="margin-bottom:14px">
+          <label style="display:block;color:#8890B5;font-size:12px;font-weight:600;text-transform:uppercase;margin-bottom:6px">Descrição *</label>
+          <input [(ngModel)]="novoItem.descricao" placeholder="Ex: Chave com chaveiro azul" style="width:100%;padding:12px 14px;background:#0F1225;border:1.5px solid #2A3158;border-radius:10px;color:#F5F7FF;font-size:15px;box-sizing:border-box;outline:none"/>
+        </div>
+        <div style="margin-bottom:20px">
+          <label style="display:block;color:#8890B5;font-size:12px;font-weight:600;text-transform:uppercase;margin-bottom:6px">Local encontrado</label>
+          <input [(ngModel)]="novoItem.local_encontrado" placeholder="Ex: Elevador social" style="width:100%;padding:12px 14px;background:#0F1225;border:1.5px solid #2A3158;border-radius:10px;color:#F5F7FF;font-size:15px;box-sizing:border-box;outline:none"/>
+        </div>
+        <button (click)="salvar()" style="width:100%;padding:16px;background:linear-gradient(135deg,#00C896,#00a07a);border:none;border-radius:12px;color:#0F1225;font-size:16px;font-weight:700;cursor:pointer">🔍 Registrar Item</button>
+      </div>
+    </div>
+  </div>
+  <div style="position:fixed;bottom:80px;right:24px;z-index:100">
+    <button (click)="formularioAberto=true" style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#00C896,#00a07a);border:none;color:#0F1225;font-size:28px;cursor:pointer;box-shadow:0 8px 24px rgba(0,200,150,0.4)">+</button>
+  </div>
+
+  <!-- Barra de navegação inferior -->
+  <div style="position:fixed;bottom:0;left:0;right:0;background:#1A1F3C;border-top:1px solid rgba(255,255,255,0.08);display:flex;z-index:200">
+    <button onclick="history.back()" style="flex:1;padding:14px;background:transparent;border:none;color:#8890B5;font-size:12px;font-weight:600;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px">
+      <span style="font-size:20px">←</span>
+      Voltar
+    </button>
+    <button onclick="window.location.href='/#/sindico/home'" style="flex:1;padding:14px;background:transparent;border:none;color:#00C896;font-size:12px;font-weight:600;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px">
+      <span style="font-size:20px">🏠</span>
+      Início
+    </button>
+  </div>
+  <!-- Espaço para a barra inferior -->
+  <div style="height:70px"></div>
+</ion-content>

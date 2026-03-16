@@ -44,6 +44,8 @@ export const routes: Routes = [
       { path: 'mural',     loadComponent: () => import('./pages/mural/mural.page').then(m => m.MuralPage) },
       { path: 'manutencao',loadComponent: () => import('./pages/manutencao/manutencao.page').then(m => m.ManutencaoPage) },
       { path: 'moradores', loadComponent: () => import('./pages/moradores/moradores.page').then(m => m.MoradoresPage) },
+      { path: 'espacos', loadComponent: () => import('./pages/espacos/espacos.page').then(m => m.EspacosPage) },
+      { path: 'historico', loadComponent: () => import('./pages/historico/historico.page').then(m => m.HistoricoPage) },
     ]
   },
 

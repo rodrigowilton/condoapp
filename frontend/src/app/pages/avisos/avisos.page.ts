@@ -1,4 +1,3 @@
-// src/app/pages/avisos/avisos.page.ts
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -17,6 +16,7 @@ export class AvisosPage implements OnInit {
   avisos: any[] = [];
   carregando = false;
   formularioAberto = false;
+  editando: any = null;
   ehSindico = false;
   novoAviso = { titulo: '', conteudo: '', urgente: false, fixado: false };
 
@@ -27,10 +27,8 @@ export class AvisosPage implements OnInit {
     private toastCtrl: ToastController
   ) {}
 
-  ngOnInit() {
-    this.ehSindico = ['sindico', 'gerencial'].includes(this.auth.perfil);
-    this.carregar();
-  }
+  ngOnInit() { this.ehSindico = ['sindico', 'gerencial'].includes(this.auth.perfil); }
+  ionViewWillEnter() { this.carregar(); }
 
   carregar() {
     this.carregando = true;
@@ -40,41 +38,43 @@ export class AvisosPage implements OnInit {
     });
   }
 
-  abrirFormulario() { this.formularioAberto = true; }
+  abrirFormulario(aviso?: any) {
+    if (aviso) {
+      this.editando = aviso;
+      this.novoAviso = { titulo: aviso.titulo, conteudo: aviso.conteudo, urgente: aviso.urgente, fixado: aviso.fixado };
+    } else {
+      this.editando = null;
+      this.novoAviso = { titulo: '', conteudo: '', urgente: false, fixado: false };
+    }
+    this.formularioAberto = true;
+  }
+
   fecharFormulario() {
     this.formularioAberto = false;
+    this.editando = null;
     this.novoAviso = { titulo: '', conteudo: '', urgente: false, fixado: false };
   }
 
   salvar() {
-    if (!this.novoAviso.titulo || !this.novoAviso.conteudo) {
-      this.toast('Título e conteúdo são obrigatórios', 'warning');
-      return;
-    }
-    this.api.criarAviso(this.novoAviso).subscribe({
-      next: () => {
-        this.toast('✅ Aviso publicado para todos os moradores!', 'success');
-        this.fecharFormulario();
-        this.carregar();
-      },
-      error: () => this.toast('Erro ao publicar aviso', 'danger')
+    if (!this.novoAviso.titulo || !this.novoAviso.conteudo) { this.toast('Titulo e conteudo sao obrigatorios', 'warning'); return; }
+    const op = this.editando
+      ? this.api.editarAviso(this.editando.id, this.novoAviso)
+      : this.api.criarAviso(this.novoAviso);
+    op.subscribe({
+      next: () => { this.toast(this.editando ? 'Aviso atualizado!' : 'Aviso publicado!', 'success'); this.fecharFormulario(); this.carregar(); },
+      error: () => this.toast('Erro ao salvar aviso', 'danger')
     });
   }
 
   async confirmarDelete(aviso: any) {
     const alert = await this.alertCtrl.create({
       header: 'Remover Aviso',
-      message: `Remover o aviso "${aviso.titulo}"?`,
+      message: 'Remover este aviso?',
       buttons: [
         { text: 'Cancelar', role: 'cancel' },
-        {
-          text: 'Remover', role: 'destructive',
-          handler: () => {
-            this.api.deletarAviso(aviso.id).subscribe({
-              next: () => { this.toast('Aviso removido', 'medium'); this.carregar(); }
-            });
-          }
-        }
+        { text: 'Remover', role: 'destructive', handler: () => {
+          this.api.deletarAviso(aviso.id).subscribe({ next: () => { this.toast('Aviso removido', 'medium'); this.carregar(); } });
+        }}
       ]
     });
     alert.present();

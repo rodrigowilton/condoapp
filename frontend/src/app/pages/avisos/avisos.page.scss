@@ -1,0 +1,87 @@
+ion-content { --background: #0F1225; }
+ion-toolbar { --background: #1A1F3C; --color: #F5F7FF; }
+ion-title { color: #F5F7FF; font-weight: 700; }
+ion-back-button { --color: #00C896; }
+
+.loading-state { display: flex; justify-content: center; padding: 60px; }
+
+.empty-state {
+  text-align: center; padding: 60px 20px;
+}
+.empty-icon { font-size: 64px; margin-bottom: 16px; }
+.empty-state p { color: #8890B5; font-size: 15px; margin-bottom: 24px; }
+.btn-novo {
+  background: linear-gradient(135deg, #00C896, #00a07a);
+  border: none; border-radius: 12px; color: #0F1225;
+  padding: 14px 28px; font-size: 15px; font-weight: 700; cursor: pointer;
+}
+
+.avisos-list { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+
+.aviso-card {
+  background: #1E2444;
+  border-radius: 16px;
+  padding: 16px;
+  border: 1px solid rgba(255,255,255,0.05);
+  border-left: 4px solid #2A3158;
+}
+.aviso-card.urgente { border-left-color: #FF6482; }
+.aviso-card.fixado { border-left-color: #FFD166; }
+
+.aviso-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+.aviso-badges { display: flex; gap: 8px; flex-wrap: wrap; }
+.badge { font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; }
+.badge.urgente { background: rgba(255,100,130,0.15); color: #FF6482; }
+.badge.fixado { background: rgba(255,209,102,0.15); color: #FFD166; }
+
+.aviso-acoes { display: flex; gap: 8px; }
+.btn-icon { background: transparent; border: none; font-size: 16px; cursor: pointer; padding: 4px 8px; border-radius: 8px; }
+.btn-icon.edit:hover { background: rgba(0,200,150,0.15); }
+.btn-icon.del:hover { background: rgba(255,100,130,0.15); }
+
+.aviso-titulo { color: #F5F7FF; font-size: 16px; font-weight: 700; margin: 0 0 8px; }
+.aviso-conteudo { color: #C5C9E0; font-size: 14px; line-height: 1.6; margin: 0 0 12px; }
+.aviso-footer { display: flex; justify-content: space-between; color: #8890B5; font-size: 12px; }
+
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+  z-index: 1000; display: flex; align-items: flex-end; justify-content: center;
+}
+.modal-box {
+  background: #1E2444; border-radius: 24px 24px 0 0;
+  width: 100%; max-width: 600px; max-height: 90vh; overflow-y: auto;
+}
+.modal-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 20px 24px 0;
+}
+.modal-header h3 { color: #F5F7FF; font-size: 18px; font-weight: 700; margin: 0; }
+.btn-fechar {
+  background: rgba(255,255,255,0.1); border: none; border-radius: 50%;
+  width: 32px; height: 32px; color: #F5F7FF; font-size: 16px; cursor: pointer;
+}
+.modal-body { padding: 20px 24px 32px; }
+.field { margin-bottom: 16px; }
+.field label { display: block; color: #8890B5; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+.field input, .field textarea {
+  width: 100%; padding: 12px 14px; background: #0F1225;
+  border: 1.5px solid #2A3158; border-radius: 10px;
+  color: #F5F7FF; font-size: 15px; box-sizing: border-box; outline: none;
+  font-family: inherit; resize: vertical;
+}
+.field input:focus, .field textarea:focus { border-color: #00C896; }
+
+.toggles-row { display: flex; gap: 16px; margin-bottom: 20px; flex-wrap: wrap; }
+.toggle-item { display: flex; align-items: center; gap: 10px; color: #C5C9E0; font-size: 14px; }
+.switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+.switch input { opacity: 0; width: 0; height: 0; }
+.slider { position: absolute; cursor: pointer; inset: 0; background: #2A3158; border-radius: 24px; transition: 0.3s; }
+.slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: 0.3s; }
+input:checked + .slider { background: #00C896; }
+input:checked + .slider:before { transform: translateX(20px); }
+
+.btn-salvar {
+  width: 100%; padding: 16px; background: linear-gradient(135deg, #00C896, #00a07a);
+  border: none; border-radius: 12px; color: #0F1225;
+  font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 4px;
+}

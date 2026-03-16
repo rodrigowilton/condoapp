@@ -1,0 +1,24 @@
+ion-content { --background: #0F1225; }
+.sindico-bg { min-height: 100vh; background: #0F1225; padding: 24px; padding-bottom: 40px; }
+.sindico-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+.header-info { display: flex; align-items: center; gap: 12px; }
+.avatar { width: 48px; height: 48px; background: linear-gradient(135deg,#6482FF,#4a62e0); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; }
+.header-info h2 { color: #F5F7FF; font-size: 18px; font-weight: 700; margin: 0 0 2px; }
+.header-info p { color: #8890B5; font-size: 13px; margin: 0; }
+.btn-logout { background: rgba(255,100,130,0.1); border: 1px solid rgba(255,100,130,0.3); border-radius: 10px; color: #FF6482; padding: 8px 14px; font-size: 13px; cursor: pointer; }
+.stats-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 28px; }
+.stat-pill { background: #1E2444; border-radius: 14px; padding: 16px 12px; text-align: center; border: 1px solid rgba(255,255,255,0.05); }
+.pill-num { display: block; color: #00C896; font-size: 26px; font-weight: 800; line-height: 1; }
+.pill-label { display: block; color: #8890B5; font-size: 11px; margin-top: 4px; }
+.section-label { color: #8890B5; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+.menu-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-bottom: 28px; }
+.menu-item { background: #1E2444; border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; padding: 16px 8px 12px; display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; }
+.menu-item span { color: #F5F7FF; font-size: 12px; font-weight: 600; }
+.menu-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+.reserva-card { background: #1E2444; border-radius: 16px; padding: 16px; margin-bottom: 10px; border: 1px solid rgba(255,255,255,0.05); }
+.reserva-info h4 { color: #F5F7FF; font-size: 15px; font-weight: 700; margin: 0 0 4px; }
+.reserva-info p { color: #8890B5; font-size: 13px; margin: 2px 0; }
+.reserva-data { color: #00C896 !important; }
+.reserva-btns { display: flex; gap: 10px; margin-top: 12px; }
+.btn-recusar { flex: 1; padding: 10px; background: rgba(255,100,130,0.15); border: none; border-radius: 10px; color: #FF6482; font-size: 14px; font-weight: 600; cursor: pointer; }
+.btn-aprovar { flex: 1; padding: 10px; background: rgba(0,200,150,0.15); border: none; border-radius: 10px; color: #00C896; font-size: 14px; font-weight: 600; cursor: pointer; }

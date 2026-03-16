@@ -1,39 +1,40 @@
-<!-- src/app/pages/login/login.page.html -->
-<ion-content class="login-content">
-  <div class="login-wrapper">
-
-    <div class="login-logo">
-      <div class="logo-icon">🏘️</div>
-      <h1>CondoApp</h1>
-      <p>Gestão inteligente do seu condomínio</p>
-    </div>
-
-    <div class="login-card">
-      <h2>Entrar</h2>
-
-      <ion-item lines="none" class="input-item">
-        <ion-label position="floating">E-mail</ion-label>
-        <ion-input type="email" [(ngModel)]="email" placeholder="seu@email.com"></ion-input>
-      </ion-item>
-
-      <ion-item lines="none" class="input-item">
-        <ion-label position="floating">Senha</ion-label>
-        <ion-input [type]="mostrarSenha ? 'text' : 'password'" [(ngModel)]="senha"></ion-input>
-        <ion-button fill="clear" slot="end" (click)="mostrarSenha = !mostrarSenha">
-          <ion-icon [name]="mostrarSenha ? 'eye-off' : 'eye'"></ion-icon>
-        </ion-button>
-      </ion-item>
-
-      <div *ngIf="erro" class="erro-msg">
-        <ion-icon name="alert-circle"></ion-icon> {{ erro }}
+<ion-content>
+  <div class="login-bg">
+    <div class="login-container">
+      <div class="login-header">
+        <div class="logo-circle">🏘️</div>
+        <h1>CondoApp</h1>
+        <p>Gestão inteligente do seu condomínio</p>
       </div>
-
-      <ion-button expand="block" class="btn-login" (click)="entrar()" [disabled]="carregando">
-        <ion-spinner *ngIf="carregando" name="crescent"></ion-spinner>
-        <span *ngIf="!carregando">Entrar</span>
-      </ion-button>
+      <div class="login-card">
+        <h2>Bem-vindo de volta</h2>
+        <p class="login-sub">Entre com suas credenciais</p>
+        <div class="field-group">
+          <label>E-mail</label>
+          <div class="input-wrapper">
+            <span class="input-icon">✉️</span>
+            <input type="email" [(ngModel)]="email" placeholder="seu@email.com"/>
+          </div>
+        </div>
+        <div class="field-group">
+          <label>Senha</label>
+          <div class="input-wrapper">
+            <span class="input-icon">🔒</span>
+            <input [type]="mostrarSenha ? 'text' : 'password'" [(ngModel)]="senha" placeholder="••••••••"/>
+            <button class="toggle-senha" (click)="mostrarSenha = !mostrarSenha">{{ mostrarSenha ? '🙈' : '👁️' }}</button>
+          </div>
+        </div>
+        <div class="erro-box" *ngIf="erro">⚠️ {{ erro }}</div>
+        <button class="btn-entrar" (click)="entrar()" [disabled]="carregando">
+          <span *ngIf="!carregando">Entrar →</span>
+          <span *ngIf="carregando">Entrando...</span>
+        </button>
+        <div class="login-footer">
+          <p>contato&#64;streetonline.com.br</p>
+          <p>📱 (27) 99273-4399</p>
+        </div>
+      </div>
+      <p class="versao">CondoApp v1.0 · Todos os direitos reservados</p>
     </div>
-
-    <p class="versao">CondoApp v1.0</p>
   </div>
 </ion-content>

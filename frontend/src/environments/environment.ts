@@ -1,5 +1,5 @@
 // src/environments/environment.ts  (desenvolvimento)
 export const environment = {
   production: false,
-  apiUrl: 'http://localhost:3000/api',  // troque pelo IP da VPS quando for testar
+  apiUrl: 'http://136.248.79.113:3002/api',  // troque pelo IP da VPS quando for testar
 };
