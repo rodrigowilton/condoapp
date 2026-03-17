@@ -80,9 +80,10 @@ export const login = async (req: Request, res: Response) => {
 };
 
 // POST /api/auth/register (síndico cria moradores)
-export const registrarMorador = async (req: Request, res: Response) => {
+export const registrarMorador = async (req: any, res: Response) => {
   try {
-    const { nome, email, senha, apartamento, bloco, telefone, condominio_id } = req.body;
+    const { nome, email, senha, apartamento, bloco, telefone } = req.body;
+    const condominio_id = req.body.condominio_id || req.user?.condominio_id;
 
     if (!nome || !email || !senha) {
       return res.status(400).json({ erro: 'Nome, e-mail e senha são obrigatórios' });

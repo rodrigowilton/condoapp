@@ -12,7 +12,7 @@ export const listar = async (req: AuthRequest, res: Response) => {
              m.nome as morador_nome, m.apartamento, m.bloco,
              r.nome as registrado_nome
       FROM encomendas e
-      JOIN usuarios m ON e.morador_id = m.id
+      LEFT JOIN usuarios m ON e.morador_id = m.id
       JOIN usuarios r ON e.registrado_por = r.id
       WHERE e.condominio_id = $1
     `;
@@ -39,8 +39,8 @@ export const registrar = async (req: AuthRequest, res: Response) => {
     const { morador_id, remetente, descricao, prateleira, foto_url } = req.body;
     const { condominio_id, id: registrado_por } = req.user!;
 
-    if (!morador_id || !prateleira) {
-      return res.status(400).json({ erro: 'Morador e prateleira são obrigatórios' });
+    if (!prateleira) {
+      return res.status(400).json({ erro: 'Prateleira é obrigatória' });
     }
 
     const result = await query(
@@ -50,13 +50,14 @@ export const registrar = async (req: AuthRequest, res: Response) => {
       [condominio_id, morador_id, registrado_por, remetente, descricao, prateleira, foto_url]
     );
 
-    // Criar notificação para o morador
-    const morador = await query('SELECT nome FROM usuarios WHERE id = $1', [morador_id]);
-    await query(
-      `INSERT INTO notificacoes (usuario_id, titulo, mensagem, tipo)
-       VALUES ($1, $2, $3, 'encomenda')`,
-      [morador_id, '📦 Nova encomenda!', `Sua encomenda chegou. Prateleira: ${prateleira}. Remetente: ${remetente || 'não informado'}`]
-    );
+    // Criar notificação para o morador (se informado)
+    if (morador_id) {
+      await query(
+        `INSERT INTO notificacoes (usuario_id, titulo, mensagem, tipo)
+         VALUES ($1, $2, $3, 'encomenda')`,
+        [morador_id, '📦 Nova encomenda!', `Sua encomenda chegou. Prateleira: ${prateleira}. Remetente: ${remetente || 'não informado'}`]
+      );
+    }
 
     return res.status(201).json(result.rows[0]);
   } catch (err) {
@@ -72,11 +73,11 @@ export const retirar = async (req: AuthRequest, res: Response) => {
 
     const result = await query(
       `UPDATE encomendas SET status = 'retirado', retirado_em = NOW()
-       WHERE id = $1 AND (morador_id = $2 OR $3 IN (
-         SELECT id FROM usuarios WHERE perfil IN ('sindico','porteiro','gerencial')
-       ))
+       WHERE id = $1 AND condominio_id = (
+         SELECT condominio_id FROM usuarios WHERE id = $2
+       )
        RETURNING *`,
-      [id, usuario_id, usuario_id]
+      [id, usuario_id]
     );
 
     if (result.rows.length === 0) {

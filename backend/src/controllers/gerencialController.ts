@@ -94,7 +94,7 @@ export const estenderTrial = async (req: AuthRequest, res: Response) => {
     const { id } = req.params;
     const { dias } = req.body;
     const result = await query(
-      `UPDATE condominios SET trial_fim = NOW() + ($1 || ' days')::interval, bloqueado = false
+      `UPDATE condominios SET trial_fim = GREATEST(trial_fim, NOW()) + ($1 || ' days')::interval, bloqueado = false
        WHERE id = $2 RETURNING *`,
       [dias || 30, id]
     );
