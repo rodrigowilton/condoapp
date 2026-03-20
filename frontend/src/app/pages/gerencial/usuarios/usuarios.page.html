@@ -26,6 +26,14 @@
           style="flex:1;padding:10px;border:none;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer">
           {{ u.bloqueado ? '🔓 Desbloquear' : '🔒 Bloquear' }}
         </button>
+        <button (click)="abrirEdicao(u)"
+          style="flex:1;padding:10px;background:rgba(0,200,150,0.15);border:none;border-radius:10px;color:#00C896;font-size:13px;font-weight:600;cursor:pointer">
+          ✏️ Editar
+        </button>
+        <button (click)="deletar(u)"
+          style="flex:1;padding:10px;background:rgba(255,100,130,0.15);border:none;border-radius:10px;color:#FF6482;font-size:13px;font-weight:600;cursor:pointer">
+          🗑️ Excluir
+        </button>
       </div>
     </div>
   </div>
@@ -39,4 +47,67 @@
     </button>
   </div>
   <div style="height:70px"></div>
+
+  <!-- FAB -->
+  <div style="position:fixed;bottom:80px;right:24px;z-index:100">
+    <button (click)="formularioAberto=true" style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#00C896,#00a07a);border:none;color:#0F1225;font-size:28px;cursor:pointer;box-shadow:0 8px 24px rgba(0,200,150,0.4)">+</button>
+  </div>
+  <!-- Modal novo usuário -->
+  <div *ngIf="formularioAberto" style="position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:1000;display:flex;align-items:flex-end;justify-content:center" (click)="formularioAberto=false">
+    <div style="background:#1E2444;border-radius:24px 24px 0 0;width:100%;max-width:600px;max-height:90vh;overflow-y:auto" (click)="$event.stopPropagation()">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:20px 24px 0">
+        <h3 style="color:#F5F7FF;font-size:18px;font-weight:700;margin:0">Novo Usuário</h3>
+        <button (click)="formularioAberto=false" style="background:rgba(255,255,255,0.1);border:none;border-radius:50%;width:32px;height:32px;color:#F5F7FF;cursor:pointer">✕</button>
+      </div>
+      <div style="padding:20px 24px 32px">
+        <div style="margin-bottom:12px"><label style="display:block;color:#8890B5;font-size:12px;font-weight:600;text-transform:uppercase;margin-bottom:6px">Nome *</label>
+          <input [(ngModel)]="novoUsuario.nome" style="width:100%;padding:12px 14px;background:#0F1225;border:1.5px solid #2A3158;border-radius:10px;color:#F5F7FF;font-size:15px;box-sizing:border-box;outline:none"/></div>
+        <div style="margin-bottom:12px"><label style="display:block;color:#8890B5;font-size:12px;font-weight:600;text-transform:uppercase;margin-bottom:6px">E-mail *</label>
+          <input type="email" [(ngModel)]="novoUsuario.email" style="width:100%;padding:12px 14px;background:#0F1225;border:1.5px solid #2A3158;border-radius:10px;color:#F5F7FF;font-size:15px;box-sizing:border-box;outline:none"/></div>
+        <div style="margin-bottom:12px"><label style="display:block;color:#8890B5;font-size:12px;font-weight:600;text-transform:uppercase;margin-bottom:6px">Senha *</label>
+          <input type="password" [(ngModel)]="novoUsuario.senha" style="width:100%;padding:12px 14px;background:#0F1225;border:1.5px solid #2A3158;border-radius:10px;color:#F5F7FF;font-size:15px;box-sizing:border-box;outline:none"/></div>
+        <div style="margin-bottom:12px"><label style="display:block;color:#8890B5;font-size:12px;font-weight:600;text-transform:uppercase;margin-bottom:6px">Perfil *</label>
+          <select [(ngModel)]="novoUsuario.perfil" style="width:100%;padding:12px 14px;background:#0F1225;border:1.5px solid #2A3158;border-radius:10px;color:#F5F7FF;font-size:15px;box-sizing:border-box;outline:none">
+            <option value="sindico">Síndico</option>
+            <option value="porteiro">Porteiro</option>
+            <option value="gerencial">Gerencial</option>
+          </select>
+        </div>
+        <div style="margin-bottom:20px"><label style="display:block;color:#8890B5;font-size:12px;font-weight:600;text-transform:uppercase;margin-bottom:6px">Condomínio</label>
+          <select [(ngModel)]="novoUsuario.condominio_id" style="width:100%;padding:12px 14px;background:#0F1225;border:1.5px solid #2A3158;border-radius:10px;color:#F5F7FF;font-size:15px;box-sizing:border-box;outline:none">
+            <option value="">Sem condomínio (gerencial)</option>
+            <option *ngFor="let c of condominios" [value]="c.id">{{ c.nome }}</option>
+          </select>
+        </div>
+        <button (click)="salvar()" style="width:100%;padding:16px;background:linear-gradient(135deg,#00C896,#00a07a);border:none;border-radius:12px;color:#0F1225;font-size:16px;font-weight:700;cursor:pointer">👤 Criar Usuário</button>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="editandoAberto" style="position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:1000;display:flex;align-items:flex-end;justify-content:center" (click)="editandoAberto=false">
+    <div style="background:#1E2444;border-radius:24px 24px 0 0;width:100%;max-width:600px;max-height:90vh;overflow-y:auto" (click)="$event.stopPropagation()">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:20px 24px 0">
+        <h3 style="color:#F5F7FF;font-size:18px;font-weight:700;margin:0">Editar Usuário</h3>
+        <button (click)="editandoAberto=false" style="background:rgba(255,255,255,0.1);border:none;border-radius:50%;width:32px;height:32px;color:#F5F7FF;cursor:pointer">✕</button>
+      </div>
+      <div style="padding:20px 24px 32px">
+        <div style="margin-bottom:12px"><label style="display:block;color:#8890B5;font-size:12px;font-weight:600;text-transform:uppercase;margin-bottom:6px">Nome *</label>
+          <input [(ngModel)]="editando.nome" style="width:100%;padding:12px 14px;background:#0F1225;border:1.5px solid #2A3158;border-radius:10px;color:#F5F7FF;font-size:15px;box-sizing:border-box;outline:none"/></div>
+        <div style="margin-bottom:12px"><label style="display:block;color:#8890B5;font-size:12px;font-weight:600;text-transform:uppercase;margin-bottom:6px">Perfil</label>
+          <select [(ngModel)]="editando.perfil" style="width:100%;padding:12px 14px;background:#0F1225;border:1.5px solid #2A3158;border-radius:10px;color:#F5F7FF;font-size:15px;box-sizing:border-box;outline:none">
+            <option value="sindico">Síndico</option>
+            <option value="porteiro">Porteiro</option>
+            <option value="morador">Morador</option>
+          </select>
+        </div>
+        <div style="margin-bottom:20px"><label style="display:block;color:#8890B5;font-size:12px;font-weight:600;text-transform:uppercase;margin-bottom:6px">Condomínio</label>
+          <select [(ngModel)]="editando.condominio_id" style="width:100%;padding:12px 14px;background:#0F1225;border:1.5px solid #2A3158;border-radius:10px;color:#F5F7FF;font-size:15px;box-sizing:border-box;outline:none">
+            <option value="">Sem condomínio</option>
+            <option *ngFor="let c of condominios" [value]="c.id">{{ c.nome }}</option>
+          </select>
+        </div>
+        <button (click)="salvarEdicao()" style="width:100%;padding:16px;background:linear-gradient(135deg,#00C896,#00a07a);border:none;border-radius:12px;color:#0F1225;font-size:16px;font-weight:700;cursor:pointer">💾 Salvar alterações</button>
+      </div>
+    </div>
+  </div>
 </ion-content>

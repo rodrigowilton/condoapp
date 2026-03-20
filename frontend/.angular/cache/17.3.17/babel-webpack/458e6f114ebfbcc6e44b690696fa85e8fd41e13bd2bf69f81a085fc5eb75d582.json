@@ -1,0 +1,1 @@
+{"ast":null,"code":"// src/environments/environment.prod.ts  (produção)\nexport const environment = {\n  production: true,\n  apiUrl: '/api' // ← troque pelo seu domínio real\n};","map":null,"metadata":{},"sourceType":"module","externalDependencies":[]}

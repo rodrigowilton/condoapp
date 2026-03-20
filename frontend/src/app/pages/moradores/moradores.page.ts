@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule, ToastController } from '@ionic/angular';
 import { ApiService } from '../../services/api.service';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-moradores',
@@ -16,11 +17,18 @@ export class MoradoresPage implements OnInit {
   carregando = false;
   formularioAberto = false;
   editando: any = null;
+  podeEditar = false;
+  homeUrl = '/#/sindico/home';
   form = { nome: '', email: '', senha: '', apartamento: '', bloco: '', telefone: '' };
 
-  constructor(private api: ApiService, private toastCtrl: ToastController) {}
+  constructor(private api: ApiService, private auth: AuthService, private toastCtrl: ToastController) {}
 
-  ngOnInit() { this.carregar(); }
+  ngOnInit() {
+    const perfil = this.auth.perfil;
+    this.podeEditar = ['sindico', 'gerencial'].includes(perfil);
+    this.homeUrl = `/#/${perfil}/home`;
+    this.carregar();
+  }
   ionViewWillEnter() { this.carregar(); }
 
   carregar() {

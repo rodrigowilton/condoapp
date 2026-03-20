@@ -88,21 +88,52 @@ router.delete('/reservas/:id', auth_1.authMiddleware, async (req, res) => {
     res.json({ ok: true });
 });
 // VISITANTES
+// GET — morador vê só os do próprio apto, porteiro/sindico vê todos
 router.get('/visitantes', auth_1.authMiddleware, async (req, res) => {
-    const result = await (0, database_1.query)(`SELECT v.*, m.nome as morador_nome, m.apartamento FROM visitantes v
-     LEFT JOIN usuarios m ON v.morador_id = m.id
-     WHERE v.condominio_id=$1 ORDER BY v.criado_em DESC LIMIT 100`, [req.user.condominio_id]);
+    const { condominio_id, perfil, id, apartamento } = req.user;
+    let sql = `
+    SELECT v.*, m.nome as morador_nome, m.apartamento as morador_apartamento
+    FROM visitantes v
+    LEFT JOIN usuarios m ON v.morador_id = m.id
+    WHERE v.condominio_id=$1
+  `;
+    const params = [condominio_id];
+    if (perfil === 'morador') {
+        sql += ` AND (v.morador_id=$2 OR v.apartamento=$3)`;
+        params.push(id, apartamento);
+    }
+    sql += ` ORDER BY v.criado_em DESC LIMIT 100`;
+    const result = await (0, database_1.query)(sql, params);
     res.json(result.rows);
 });
+// POST — morador cria com status pendente, porteiro/sindico cria como autorizado
 router.post('/visitantes', auth_1.authMiddleware, async (req, res) => {
-    const { morador_id, nome, documento, placa, motivo } = req.body;
-    const result = await (0, database_1.query)(`INSERT INTO visitantes (condominio_id, morador_id, registrado_por, nome, documento, placa, motivo, status, entrada_em)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,'autorizado',NOW()) RETURNING *`, [req.user.condominio_id, morador_id, req.user.id, nome, documento, placa, motivo]);
+    const { morador_id, nome, documento, placa, motivo, apartamento } = req.body;
+    const { condominio_id, id: registrado_por, perfil, apartamento: apto_usuario } = req.user;
+    const status = perfil === 'morador' ? 'pendente' : 'autorizado';
+    const entrada_em = perfil === 'morador' ? null : 'NOW()';
+    const apto = apartamento || apto_usuario;
+    const result = await (0, database_1.query)(`INSERT INTO visitantes (condominio_id, morador_id, registrado_por, nome, documento, placa, motivo, status, apartamento, entrada_em)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,${perfil === 'morador' ? 'NULL' : 'NOW()'}) RETURNING *`, [condominio_id, morador_id || req.user.id, registrado_por, nome, documento, placa, motivo, status, apto]);
     res.status(201).json(result.rows[0]);
 });
+// PATCH autorizar — porteiro completa dados e autoriza visitante pendente
+router.patch('/visitantes/:id/autorizar', auth_1.authMiddleware, (0, auth_1.requirePerfil)('porteiro', 'sindico', 'gerencial'), async (req, res) => {
+    const { documento, placa, motivo } = req.body;
+    const result = await (0, database_1.query)(`UPDATE visitantes
+     SET status='autorizado',
+         entrada_em=NOW(),
+         documento=COALESCE(NULLIF($1,''), documento),
+         placa=COALESCE(NULLIF($2,''), placa),
+         motivo=COALESCE(NULLIF($3,''), motivo)
+     WHERE id=$4 AND condominio_id=$5 RETURNING *`, [documento, placa, motivo, req.params.id, req.user.condominio_id]);
+    res.json(result.rows[0]);
+});
+// PATCH status — registrar saída
 router.patch('/visitantes/:id/status', auth_1.authMiddleware, async (req, res) => {
     const { status } = req.body;
-    const result = await (0, database_1.query)(`UPDATE visitantes SET status=$1 WHERE id=$2 AND condominio_id=$3 RETURNING *`, [status, req.params.id, req.user.condominio_id]);
+    const extra = status === 'saiu' ? ', saida_em=NOW()' : '';
+    const result = await (0, database_1.query)(`UPDATE visitantes SET status=$1${extra} WHERE id=$2 AND condominio_id=$3 RETURNING *`, [status, req.params.id, req.user.condominio_id]);
     res.json(result.rows[0]);
 });
 router.delete('/visitantes/:id', auth_1.authMiddleware, (0, auth_1.requirePerfil)('sindico', 'gerencial'), async (req, res) => {
@@ -158,7 +189,10 @@ router.post('/achados', auth_1.authMiddleware, async (req, res) => {
     res.status(201).json(result.rows[0]);
 });
 router.patch('/achados/:id/retirar', auth_1.authMiddleware, async (req, res) => {
-    const result = await (0, database_1.query)(`UPDATE achados_perdidos SET status='retirado', retirado_por=$1 WHERE id=$2 AND condominio_id=$3 RETURNING *`, [req.user.id, req.params.id, req.user.condominio_id]);
+    const { retirado_por_nome, retirado_por_apto } = req.body;
+    const result = await (0, database_1.query)(`UPDATE achados_perdidos
+     SET status='retirado', retirado_por=$1, retirado_por_nome=$2, retirado_por_apto=$3, retirado_em=NOW()
+     WHERE id=$4 AND condominio_id=$5 RETURNING *`, [req.user.id, retirado_por_nome, retirado_por_apto, req.params.id, req.user.condominio_id]);
     res.json(result.rows[0]);
 });
 router.delete('/achados/:id', auth_1.authMiddleware, async (req, res) => {
@@ -278,4 +312,10 @@ router.get('/gerencial/usuarios', auth_1.authMiddleware, (0, auth_1.requirePerfi
      WHERE u.perfil != 'gerencial' ORDER BY u.criado_em DESC`);
     res.json(result.rows);
 });
+router.patch('/gerencial/usuarios/:id', auth_1.authMiddleware, (0, auth_1.requirePerfil)('gerencial'), async (req, res) => {
+    const { nome, perfil, condominio_id } = req.body;
+    const result = await (0, database_1.query)('UPDATE usuarios SET nome=$1, perfil=$2, condominio_id=$3 WHERE id=$4 RETURNING id, nome, email, perfil, condominio_id', [nome, perfil, condominio_id || null, req.params.id]);
+    res.json(result.rows[0]);
+});
+router.patch('/gerencial/usuarios/:id/bloquear', auth_1.authMiddleware, (0, auth_1.requirePerfil)('gerencial'), gerencialController_1.bloquearUsuario);
 exports.default = router;

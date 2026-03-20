@@ -15,7 +15,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
       - ./database/01_schema.sql:/docker-entrypoint-initdb.d/01_schema.sql
     ports:
-      - "5432:5432"
+      - "5433:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U condoapp_user -d condoapp"]
       interval: 10s
@@ -42,10 +42,22 @@ services:
       JWT_EXPIRES_IN: 7d
       FRONTEND_URL: ${FRONTEND_URL:-*}
     ports:
-      - "3000:3000"
+      - "3002:3000"
     volumes:
       - uploads_data:/app/uploads
+
+
+  frontend:
+    build: ./frontend
+    container_name: condoapp_frontend
+    restart: unless-stopped
+    ports:
+      - "3013:80"
+    depends_on:
+      - backend
 
 volumes:
   postgres_data:
   uploads_data:
+
+

@@ -35,6 +35,7 @@ export class ApiService {
 
   getVisitantes() { return this.get<any[]>('/visitantes'); }
   registrarVisitante(data: any) { return this.post<any>('/visitantes', data); }
+  autorizarVisitante(id: string, dados: any) { return this.patch<any>(`/visitantes/${id}/autorizar`, dados); }
   atualizarStatusVisitante(id: string, status: string) { return this.patch<any>(`/visitantes/${id}/status`, { status }); }
   deletarVisitante(id: string) { return this.delete<any>(`/visitantes/${id}`); }
 
@@ -46,7 +47,7 @@ export class ApiService {
 
   getAchados() { return this.get<any[]>('/achados'); }
   criarAchado(data: any) { return this.post<any>('/achados', data); }
-  retirarAchado(id: string) { return this.patch<any>(`/achados/${id}/retirar`, {}); }
+  retirarAchado(id: string, dados?: any) { return this.patch<any>(`/achados/${id}/retirar`, dados || {}); }
   deletarAchado(id: string) { return this.delete<any>(`/achados/${id}`); }
 
   getMural() { return this.get<any[]>('/mural'); }
@@ -76,5 +77,7 @@ export class ApiService {
   editarCondominio(id: string, data: any) { return this.patch<any>(`/gerencial/condominios/${id}/editar`, data); }
   criarSindicoCondominio(id: string, data: any) { return this.post<any>(`/gerencial/condominios/${id}/sindico`, data); }
   getUsuariosGerencial() { return this.get<any[]>('/gerencial/usuarios'); }
+  deletarUsuarioGerencial(id: string) { return this.delete<any>(`/gerencial/usuarios/${id}`); }
   bloquearUsuario(id: string, bloqueado: boolean) { return this.patch<any>(`/gerencial/usuarios/${id}/bloquear`, { bloqueado }); }
+  deletarCondominio(id: string) { return this.delete<any>(`/gerencial/condominios/${id}`); }
 }

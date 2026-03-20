@@ -48,6 +48,7 @@ export class LoginPage {
   private redirecionar(perfil: string) {
     if (perfil === 'gerencial') this.router.navigate(['/gerencial/dashboard']);
     else if (perfil === 'sindico') this.router.navigate(['/sindico/home']);
+    else if (perfil === 'porteiro') this.router.navigate(['/porteiro/home']);
     else this.router.navigate(['/morador/home']);
   }
 }

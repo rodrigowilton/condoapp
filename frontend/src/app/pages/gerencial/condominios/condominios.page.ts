@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule, ToastController } from '@ionic/angular';
+import { Router } from '@angular/router';
 import { ApiService } from '../../../services/api.service';
 
 @Component({
@@ -22,7 +23,7 @@ export class CondominiosPage implements OnInit {
   novoSindico = { nome: '', email: '', senha: '' };
   novo = { nome: '', endereco: '', cidade: '', estado: '', sindico_nome: '', sindico_email: '', sindico_senha: '' };
 
-  constructor(private api: ApiService, private toastCtrl: ToastController) {}
+  constructor(private api: ApiService, private toastCtrl: ToastController, private router: Router) {}
 
   ngOnInit() { this.carregar(); }
   ionViewWillEnter() { this.carregar(); }
@@ -90,6 +91,15 @@ export class CondominiosPage implements OnInit {
       next: () => { this.toast('Sindico criado e vinculado!', 'success'); this.sindicoAberto = false; this.carregar(); },
       error: (err: any) => this.toast(err.error?.erro || 'Erro ao criar sindico', 'danger')
     });
+  }
+
+  deletar(c: any) {
+    if (confirm('Excluir condominio ' + c.nome + '? Esta acao nao pode ser desfeita!')) {
+      this.api.deletarCondominio(c.id).subscribe({
+        next: () => { this.toast('Condominio excluido!', 'medium'); this.router.navigate(['/gerencial/dashboard']); },
+        error: () => this.toast('Erro ao excluir', 'danger')
+      });
+    }
   }
 
   salvar() {

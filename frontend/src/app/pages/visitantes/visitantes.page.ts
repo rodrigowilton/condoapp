@@ -16,14 +16,37 @@ export class VisitantesPage implements OnInit {
   visitantes: any[] = [];
   visitantesFiltrados: any[] = [];
   carregando = false;
-  formularioAberto = false;
-  podeRegistrar = false;
   busca = '';
+  perfil = '';
+  homeUrl = '/#/sindico/home';
+
+  // Permissões
+  podeRegistrar = false;  // porteiro, sindico, morador
+  podeAutorizar = false;  // porteiro, sindico
+  podeDeletar = false;    // sindico, gerencial
+
+  // Modal novo visitante (morador cadastra antecipado)
+  modalNovo = false;
   novoVisitante = { nome: '', apartamento: '', documento: '', placa: '', motivo: '' };
+  salvando = false;
+
+  // Modal autorizar (porteiro completa e autoriza)
+  modalAutorizar = false;
+  visitanteSelecionado: any = null;
+  dadosAutorizacao = { documento: '', placa: '', motivo: '' };
+  autorizando = false;
 
   constructor(private api: ApiService, private auth: AuthService, private toastCtrl: ToastController) {}
 
-  ngOnInit() { this.podeRegistrar = ['sindico', 'porteiro', 'gerencial'].includes(this.auth.perfil); this.carregar(); }
+  ngOnInit() {
+    this.perfil = this.auth.perfil;
+    this.homeUrl = '/#/' + this.perfil + '/home';
+    this.podeRegistrar = ['sindico', 'porteiro', 'gerencial', 'morador'].includes(this.perfil);
+    this.podeAutorizar = ['sindico', 'porteiro', 'gerencial'].includes(this.perfil);
+    this.podeDeletar = ['sindico', 'gerencial'].includes(this.perfil);
+    this.carregar();
+  }
+
   ionViewWillEnter() { this.carregar(); }
 
   carregar() {
@@ -36,24 +59,51 @@ export class VisitantesPage implements OnInit {
 
   filtrar() {
     const b = this.busca.toLowerCase();
-    this.visitantesFiltrados = b ? this.visitantes.filter(v =>
-      v.nome?.toLowerCase().includes(b) || v.placa?.toLowerCase().includes(b)
-    ) : [...this.visitantes];
+    this.visitantesFiltrados = b
+      ? this.visitantes.filter(v => v.nome?.toLowerCase().includes(b) || v.placa?.toLowerCase().includes(b) || v.apartamento?.toLowerCase().includes(b))
+      : [...this.visitantes];
   }
 
-  abrirFormulario() { this.formularioAberto = true; }
-  fecharFormulario() { this.formularioAberto = false; this.novoVisitante = { nome: '', apartamento: '', documento: '', placa: '', motivo: '' }; }
+  get pendentes() { return this.visitantesFiltrados.filter(v => v.status === 'pendente'); }
+  get ativos() { return this.visitantesFiltrados.filter(v => v.status === 'autorizado'); }
+  get saidos() { return this.visitantesFiltrados.filter(v => v.status === 'saiu'); }
+
+  // ── Novo visitante ──
+  abrirNovo() {
+    this.novoVisitante = { nome: '', apartamento: '', documento: '', placa: '', motivo: '' };
+    if (this.perfil === 'morador') {
+      this.novoVisitante.apartamento = (this.auth.usuario as any)?.apartamento || '';
+    }
+    this.modalNovo = true;
+  }
 
   salvar() {
     if (!this.novoVisitante.nome) { this.toast('Nome obrigatorio', 'warning'); return; }
+    this.salvando = true;
     this.api.registrarVisitante(this.novoVisitante).subscribe({
-      next: () => { this.toast('Visitante registrado!', 'success'); this.fecharFormulario(); this.carregar(); },
-      error: () => this.toast('Erro ao registrar', 'danger')
+      next: () => { this.salvando = false; this.modalNovo = false; this.carregar(); this.toast('Visitante cadastrado!', 'success'); },
+      error: () => { this.salvando = false; this.toast('Erro ao cadastrar', 'danger'); }
     });
   }
 
+  // ── Autorizar visitante pendente (porteiro) ──
+  abrirAutorizar(v: any) {
+    this.visitanteSelecionado = v;
+    this.dadosAutorizacao = { documento: v.documento || '', placa: v.placa || '', motivo: v.motivo || '' };
+    this.modalAutorizar = true;
+  }
+
+  autorizar() {
+    this.autorizando = true;
+    this.api.autorizarVisitante(this.visitanteSelecionado.id, this.dadosAutorizacao).subscribe({
+      next: () => { this.autorizando = false; this.modalAutorizar = false; this.carregar(); this.toast('Visitante autorizado!', 'success'); },
+      error: () => { this.autorizando = false; this.toast('Erro ao autorizar', 'danger'); }
+    });
+  }
+
+  // ── Registrar saída ──
   registrarSaida(id: string) {
-    if (confirm('Registrar saída deste visitante?')) {
+    if (confirm('Registrar saida deste visitante?')) {
       this.api.atualizarStatusVisitante(id, 'saiu').subscribe({
         next: () => { this.toast('Saida registrada!', 'success'); this.carregar(); },
         error: () => this.toast('Erro ao registrar saida', 'danger')

@@ -20,16 +20,27 @@ export class EncomendasPage implements OnInit {
   carregando = false;
   formularioAberto = false;
   podeRegistrar = false;
+  podeDeletar = false;
+  homeUrl = '/#/sindico/home';
   novaEncomenda = { apartamento: '', prateleira: '', remetente: '', descricao: '' };
 
   constructor(private api: ApiService, private auth: AuthService, private toastCtrl: ToastController, private cdr: ChangeDetectorRef) {}
 
-  ngOnInit() { this.podeRegistrar = ['sindico', 'porteiro', 'gerencial'].includes(this.auth.perfil); this.carregar(); }
+  ngOnInit() {
+    const perfil = this.auth.perfil;
+    this.podeRegistrar = ['sindico', 'porteiro', 'gerencial'].includes(perfil);
+    this.podeDeletar = ['sindico', 'gerencial'].includes(perfil);
+    this.homeUrl = `/#/${perfil}/home`;
+    this.carregar();
+  }
   ionViewWillEnter() { this.carregar(); }
 
   carregar() {
     this.carregando = true;
-    this.api.getEncomendas().subscribe({ next: (d) => { this.encomendas = d; this.filtrar(); this.carregando = false; this.cdr.detectChanges(); }, error: () => { this.carregando = false; } });
+    this.api.getEncomendas().subscribe({
+      next: (d) => { this.encomendas = d; this.filtrar(); this.carregando = false; this.cdr.detectChanges(); },
+      error: () => { this.carregando = false; }
+    });
   }
 
   filtrar() { this.encomendasFiltradas = this.encomendas.filter(e => e.status === this.filtro); }

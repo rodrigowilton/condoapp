@@ -44,6 +44,8 @@ export const routes: Routes = [
       { path: 'mural',     loadComponent: () => import('./pages/mural/mural.page').then(m => m.MuralPage) },
       { path: 'manutencao',loadComponent: () => import('./pages/manutencao/manutencao.page').then(m => m.ManutencaoPage) },
       { path: 'moradores', loadComponent: () => import('./pages/moradores/moradores.page').then(m => m.MoradoresPage) },
+      { path: 'avisos', loadComponent: () => import('./pages/avisos/avisos.page').then(m => m.AvisosPage) },
+      { path: 'achados', loadComponent: () => import('./pages/achados/achados.page').then(m => m.AchadosPage) },
       { path: 'espacos', loadComponent: () => import('./pages/espacos/espacos.page').then(m => m.EspacosPage) },
       { path: 'historico', loadComponent: () => import('./pages/historico/historico.page').then(m => m.HistoricoPage) },
     ]
@@ -58,6 +60,21 @@ export const routes: Routes = [
       { path: 'dashboard',    loadComponent: () => import('./pages/gerencial/dashboard/dashboard.page').then(m => m.DashboardPage) },
       { path: 'condominios',  loadComponent: () => import('./pages/gerencial/condominios/condominios.page').then(m => m.CondominiosPage) },
       { path: 'usuarios',     loadComponent: () => import('./pages/gerencial/usuarios/usuarios.page').then(m => m.UsuariosPage) },
+    ]
+  },
+
+  // ── Porteiro ─────────────────────────────────
+  {
+    path: 'porteiro',
+    canActivate: [authGuard, perfilGuard('porteiro')],
+    children: [
+      { path: '', redirectTo: 'home', pathMatch: 'full' },
+      { path: 'home', loadComponent: () => import('./pages/home-porteiro/home-porteiro.page').then(m => m.HomePorteiroPage) },
+      { path: 'visitantes', loadComponent: () => import('./pages/visitantes/visitantes.page').then(m => m.VisitantesPage) },
+      { path: 'encomendas', loadComponent: () => import('./pages/encomendas/encomendas.page').then(m => m.EncomendasPage) },
+      { path: 'moradores', loadComponent: () => import('./pages/moradores/moradores.page').then(m => m.MoradoresPage) },
+      { path: 'avisos', loadComponent: () => import('./pages/avisos/avisos.page').then(m => m.AvisosPage) },
+      { path: 'achados', loadComponent: () => import('./pages/achados/achados.page').then(m => m.AchadosPage) },
     ]
   },
 
